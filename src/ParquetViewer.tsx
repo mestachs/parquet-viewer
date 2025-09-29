@@ -1,6 +1,16 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import * as duckdb from '@duckdb/duckdb-wasm';
+import { ResultsTable } from './ResultsTable';
+
+// Debounce utility function
+const debounce = (func: Function, delay: number) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+};
 
 export function ParquetViewer() {
   const [db, setDb] = useState<duckdb.AsyncDuckDB | null>(null);
@@ -50,7 +60,7 @@ export function ParquetViewer() {
     setStatus(`Registered as ${name}`);
   };
 
-  const runSQL = async (query: string) => {
+  const runSQL = useCallback(async (query: string) => {
     if (!conn) return;
 
     let q = query;
@@ -81,7 +91,9 @@ export function ParquetViewer() {
       setStatus('Error: ' + err.message);
       setResults([]);
     }
-  };
+  }, [conn]);
+
+  const debouncedSetSql = useCallback(debounce(setSql, 500), []);
 
   const preview = async () => {
     const newSql = `SELECT * FROM read_parquet('uploaded.parquet') LIMIT ${sampleLimit};`;
@@ -149,7 +161,7 @@ export function ParquetViewer() {
       <div className="small">Library served from jsDelivr CDN. Works fully in-browser (no server).</div>
 
       <label>SQL (you may use <code>read_parquet('uploaded.parquet')</code>):</label>
-      <textarea value={sql} onChange={(e) => setSql(e.target.value)} />
+      <textarea value={sql} onChange={(e) => debouncedSetSql(e.target.value)} />
       <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
         <button onClick={() => runSQL(sql)} disabled={!file || !db}>
           Run SQL
@@ -163,30 +175,7 @@ export function ParquetViewer() {
         <div className="small">{status}</div>
       </div>
 
-      {results.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              {Object.keys(results[0]).map((c) => (
-                <th key={c}>{c}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((r, i) => (
-              <tr key={i}>
-                {Object.values(r).map((v: any, j) => (
-                  <td key={j} title={String(v ?? '')}>
-                    {String(v ?? '').slice(0, 300)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <div className="small">No rows</div>
-      )}
+      <ResultsTable results={results} />
     </div>
   );
 }
