@@ -10,8 +10,11 @@
     "start": "NODE_ENV=production bun src/index.tsx"
   },
   "dependencies": {
+    "@deck.gl/layers": "^9.1.15",
     "@duckdb/duckdb-wasm": "^1.30.0",
+    "deck.gl": "^9.1.15",
     "duckdb-wasm-kit": "^0.1.39",
+    "maplibre-gl": "^5.8.0",
     "react": "^19",
     "react-dom": "^19"
   },

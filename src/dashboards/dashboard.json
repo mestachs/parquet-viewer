@@ -1,0 +1,191 @@
+{
+  "filters": [
+    {
+      "id": "level_1_name",
+      "label": "Country",
+      "type": "select-multiple",
+      "source": {
+        "dataSource": "orgunits",
+        "column": "level_1_name"
+      }
+    },
+    {
+      "id": "level_2_name",
+      "label": "Level 2 Name",
+      "type": "select-multiple",
+      "source": {
+        "dataSource": "orgunits",
+        "column": "level_2_name"
+      },
+      "dependsOn": "level_1_name"
+    },
+    {
+      "id": "level_3_name",
+      "label": "Level 3 Name",
+      "type": "select-multiple",
+      "source": {
+        "dataSource": "orgunits",
+        "column": "level_3_name"
+      },
+      "dependsOn": "level_2_name"
+    },
+    {
+      "id": "org_unit_type_name",
+      "label": "Org Unit Type",
+      "type": "select-multiple",
+      "source": {
+        "dataSource": "orgunits",
+        "column": "org_unit_type_name"
+      }
+    }
+  ],
+  "widgets": {
+    "totalOrgUnits": {
+      "type": "keyNumber",
+      "label": "Total Org Units",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "aggregate",
+        "metrics": [
+          {
+            "label": "total_orgunits",
+            "sqlExpression": "COUNT(*)"
+          }
+        ],
+        "rowLimit": 1
+      }
+    },
+    "orgUnitsByType": {
+      "type": "table",
+      "label": "Org Units by Type",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "aggregate",
+        "groupBy": [
+          "org_unit_type_name"
+        ],
+        "metrics": [
+          {
+            "label": "count_orgunits",
+            "sqlExpression": "COUNT(*)"
+          }
+        ],
+        "rowLimit": 100
+      }
+    },
+    "orgUnitsMap": {
+      "type": "map",
+      "label": "Org Units Map",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "raw",
+        "columns": [
+          {
+            "column": "org_unit_simplified_geom_geojson",
+            "label": "Simplified Geometry"
+          },
+          {
+            "column": "org_unit_name"
+          }
+        ],
+        "rowLimit": 1000
+      }
+    },
+    "allOrgunitsTable": {
+      "type": "table",
+      "label": "All Org Units",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "raw",
+        "columns": [
+          {
+            "column": "org_unit_name",
+            "label": "Name"
+          },
+          {
+            "column": "org_unit_level",
+            "label": "Level"
+          },
+          {
+            "column": "org_unit_type_name",
+            "label": "Type"
+          },
+          {
+            "column": "level_1_name",
+            "label": "Pays"
+          },
+          {
+            "column": "level_2_name",
+            "label": "Région"
+          },
+          {
+            "column": "level_3_name",
+            "label": "District"
+          },
+          {
+            "column": "level_4_name",
+            "label": "Pays"
+          }
+        ],
+        "rowLimit": 1000
+      }
+    },
+    "orgUnitsWithGeoJSON": {
+      "type": "keyNumber",
+      "label": "Org Units with Points",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "aggregate",
+        "metrics": [
+          {
+            "label": "Points",
+            "sqlExpression": "COUNT(*) FILTER (WHERE org_unit_longitude IS NOT NULL)"
+          }
+        ],
+        "rowLimit": 1
+      }
+    }
+  },
+  "layout": [
+    {
+      "type": "ParquetUploadWidget",
+      "className": "mb-4"
+    },
+    {
+      "type": "Filters",
+      "className": "flex space-x-4 mb-4"
+    },
+    {
+      "type": "Container",
+      "className": "grid grid-cols-3 gap-4",
+      "children": [
+        {
+          "type": "Widget",
+          "widgetKey": "totalOrgUnits",
+          "className": ""
+        },
+        {
+          "type": "Widget",
+          "widgetKey": "orgUnitsWithGeoJSON",
+          "className": ""
+        }
+      ]
+    },
+    {
+      "type": "Widget",
+      "widgetKey": "orgUnitsByType",
+      "className": "col-span-2"
+    },
+    {
+      "type": "ConditionalWidget",
+      "widgetKey": "orgUnitsMap",
+      "invertCondition": true,
+      "className": "col-span-3 h-[500px]"
+    },
+    {
+      "type": "Widget",
+      "widgetKey": "allOrgunitsTable",
+      "className": "col-span-3"
+    }
+  ]
+}
