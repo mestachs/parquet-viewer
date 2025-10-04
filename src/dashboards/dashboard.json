@@ -130,7 +130,7 @@
         "rowLimit": 1000
       }
     },
-    "orgUnitsWithGeoJSON": {
+    "orgUnitsWithPoints": {
       "type": "keyNumber",
       "label": "Org Units with Points",
       "params": {
@@ -144,7 +144,23 @@
         ],
         "rowLimit": 1
       }
+    },
+    "orgUnitsWithGeoJson": {
+      "type": "keyNumber",
+      "label": "Org Units with geojson",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "aggregate",
+        "metrics": [
+          {
+            "label": "Points",
+            "sqlExpression": "COUNT(*) FILTER (WHERE org_unit_simplified_geom_geojson IS NOT NULL)"
+          }
+        ],
+        "rowLimit": 1
+      }
     }
+
   },
   "layout": [
     {
@@ -166,7 +182,12 @@
         },
         {
           "type": "Widget",
-          "widgetKey": "orgUnitsWithGeoJSON",
+          "widgetKey": "orgUnitsWithPoints",
+          "className": ""
+        },
+        {
+          "type": "Widget",
+          "widgetKey": "orgUnitsWithGeoJson",
           "className": ""
         }
       ]
