@@ -35,7 +35,6 @@ export function ParquetViewer() {
       setStatus("Running query...");
       try {
         const start = performance.now();
-        debugger;
         const conn = await db.connect();
         const res = await conn.query(q);
         const arr = await res.toArray();

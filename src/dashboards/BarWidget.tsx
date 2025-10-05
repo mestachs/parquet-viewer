@@ -48,13 +48,11 @@ export function BarWidget({
 
       let series = [];
       let legendData: string[] = [];
-      debugger;
       if (seriesColumn) {
         const uniqueSeriesValues = Array.from(
           new Set(data.map((row) => row[seriesColumn]).filter((r) => r))
         );
         legendData = uniqueSeriesValues as string[];
-        debugger;
         series = uniqueSeriesValues.map((seriesVal) => {
           return {
             name: seriesVal,

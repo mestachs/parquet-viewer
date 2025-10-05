@@ -79,11 +79,21 @@
       "params": {
         "dataSource": "orgunits",
         "queryMode": "raw",
+        "latitude": "latitude",
+        "longitude": "longitude",
         "columns": [
           {
             "column": "org_unit_simplified_geom_geojson",
             "label": "Simplified Geometry"
           },
+          {
+            "column": "org_unit_longitude",
+            "label": "longitude"
+          },          
+          {
+            "column": "org_unit_latitude",
+            "label": "latitude"
+          },          
           {
             "column": "org_unit_name"
           }
@@ -262,7 +272,6 @@
     {
       "type": "ConditionalWidget",
       "widgetKey": "orgUnitsMap",
-      "invertCondition": true,
       "className": "col-span-3 h-[500px]"
     },
     {

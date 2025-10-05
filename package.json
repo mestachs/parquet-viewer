@@ -17,9 +17,12 @@
     "deck.gl": "^9.1.15",
     "duckdb-wasm-kit": "^0.1.39",
     "echarts": "^6.0.0",
+    "leaflet": "^1.9.4",
+    "leaflet.glify": "^3.3.1",
     "maplibre-gl": "^5.8.0",
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
