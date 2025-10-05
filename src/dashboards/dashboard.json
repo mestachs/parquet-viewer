@@ -202,7 +202,7 @@
     {
       "type": "ParquetUploadWidget",
       "className": "mb-4",
-      "defaultUrl": "/orgunits.parquet"
+      "defaultUrl": "./orgunits.parquet"
     },
     {
       "type": "Filters",
