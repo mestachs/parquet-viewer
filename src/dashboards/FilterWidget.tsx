@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useDuckDB } from "./DuckDBProvider";
 
 export function FilterWidget({ config, onFilterChange, filters }) {
-  const { db } = useDuckDB();
+  const { db, tableVersion } = useDuckDB(); // Get tableVersion
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -35,7 +35,10 @@ export function FilterWidget({ config, onFilterChange, filters }) {
     };
 
     fetchOptions();
-  }, [db, config, filters]); // Removed onFilterChange from dependencies
+  }, [db, config, filters, tableVersion]); // Add tableVersion to dependencies
+
+  // Effect to clear selected filters when tableVersion changes
+  // This effect is removed as filter clearing is now handled by onFileRegistered callback
 
   // Effect to synchronize internal selected state with parent filters prop
   useEffect(() => {

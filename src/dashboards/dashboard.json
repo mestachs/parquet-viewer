@@ -170,7 +170,7 @@
         "queryMode": "aggregate",
         "viz_type": "bar_chart",
         "x_axis": {
-          "column": "org_unit_level_2_name"
+          "column": "level_2_name"
         },
         "metrics": [
           {
@@ -180,7 +180,7 @@
         ],
         "groupby": [
           "org_unit_type_name",
-          "org_unit_level_2_name"
+          "level_2_name"
         ],
         "y_axis_title": "",
         "y_axis_title_margin": 15,
@@ -230,14 +230,20 @@
       ]
     },
     {
-      "type": "Widget",
-      "widgetKey": "orgunitByTypePerLevel2",
-      "className": "col-span-3 h-[500px]"
-    },
-    {
-      "type": "Widget",
-      "widgetKey": "orgUnitsByType",
-      "className": "col-span-2"
+      "type": "Container",
+      "className": "grid grid-cols-3 gap-4",
+      "children": [
+        {
+          "type": "Widget",
+          "widgetKey": "orgunitByTypePerLevel2",
+          "className": "col-span-3 h-[500px]"
+        },
+        {
+          "type": "Widget",
+          "widgetKey": "orgUnitsByType",
+          "className": "col-span-2"
+        }
+      ]
     },
     {
       "type": "ConditionalWidget",

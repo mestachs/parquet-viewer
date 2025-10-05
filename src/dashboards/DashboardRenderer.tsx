@@ -41,10 +41,17 @@ export const DashboardRenderer = React.memo(({
   onFilterChange,
   disableMap = false,
 }: DashboardRendererProps) => {
+  const handleFileRegistered = useCallback(() => {
+    // Clear all filters
+    for (const filterConfig of config.filters) {
+      onFilterChange(filterConfig.id, []);
+    }
+  }, [config.filters, onFilterChange]);
+
   const renderLayoutItem = useCallback((item: any): React.ReactNode => {
     switch (item.type) {
       case "ParquetUploadWidget":
-        return <ParquetUploadWidget key="upload" className={item.className} defaultUrl={item.defaultUrl} />;
+        return <ParquetUploadWidget key="upload" className={item.className} defaultUrl={item.defaultUrl} onFileRegistered={handleFileRegistered} />;
 
       case "Filters":
         return (
@@ -99,7 +106,7 @@ export const DashboardRenderer = React.memo(({
       default:
         return null;
     }
-  }, [config, rawFilters, supersetFilters, onFilterChange, disableMap]); // Add all dependencies
+  }, [config, rawFilters, supersetFilters, onFilterChange, disableMap, handleFileRegistered]); // Add handleFileRegistered to dependencies
 
   return (
     <div className="space-y-4 p-4">

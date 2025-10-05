@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useDuckDB } from './DuckDBProvider'
 import { DuckDBDataProtocol } from '@duckdb/duckdb-wasm'
 
-export function ParquetUploadWidget({ defaultUrl }: { defaultUrl?: string }) {
+export function ParquetUploadWidget({ defaultUrl, onFileRegistered }: { defaultUrl?: string, onFileRegistered?: () => void }) {
   const { db, refreshTables } = useDuckDB()
   const [tableName, setTableName] = useState('orgunits')
   const [status, setStatus] = useState('')
@@ -47,6 +47,9 @@ export function ParquetUploadWidget({ defaultUrl }: { defaultUrl?: string }) {
 
       setStatus(`✅ Registered table: ${tableName}`)
       refreshTables()
+      if (onFileRegistered) {
+        onFileRegistered();
+      }
     } catch (err) {
       console.error(err)
       setStatus('❌ Failed to register file')
@@ -57,7 +60,7 @@ export function ParquetUploadWidget({ defaultUrl }: { defaultUrl?: string }) {
     <div className="p-4 border rounded-2xl bg-gray-50">
       <div className='flex items-center gap-2'>
         <label className="block text-sm font-medium mb-2">Upload Parquet File</label>
-        <input type="file" accept=".parquet" onChange={handleUpload} />
+        <input type="file" accept=".parquet" className="btn" onChange={handleUpload} />
       </div>
       <div className='flex items-center gap-2'>
         <label className="block text-sm font-medium mb-2">Table Name</label>
@@ -79,3 +82,4 @@ export function ParquetUploadWidget({ defaultUrl }: { defaultUrl?: string }) {
     </div>
   )
 }
+

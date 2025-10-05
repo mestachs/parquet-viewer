@@ -3,21 +3,14 @@ import * as duckdb from "@duckdb/duckdb-wasm";
 import { useDuckDb } from "duckdb-wasm-kit";
 import { ResultsTable } from "./ResultsTable";
 
-// Debounce utility function
-const debounce = (func: Function, delay: number) => {
-  let timeout: NodeJS.Timeout;
-  return (...args: any[]) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), delay);
-  };
-};
-
 export function ParquetViewer() {
   const { db, loading: dbLoading, error: dbError } = useDuckDb();
   const [status, setStatus] = useState("Loading duckdb-wasm...");
   const [sql, setSql] = useState(
     "SELECT * FROM read_parquet('uploaded.parquet')"
   );
+  const [lastSql, setLastSql] = useState("");
+
   const [results, setResults] = useState<any[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [sampleLimit, setSampleLimit] = useState(25);
@@ -32,38 +25,42 @@ export function ParquetViewer() {
     setStatus(`Registered as ${name}`);
   };
 
-  const runSQL = useCallback(async (query: string) => {
-    console.log(query, db);
+  const runSQL = useCallback(
+    async (query: string) => {
+      console.log(query, db);
 
-    let q = query;
-    let addedLimit = false;
+      let q = query;
+      let addedLimit = false;
 
-    setStatus("Running query...");
-    try {
-      const start = performance.now();
-      debugger;
-      const conn = await db.connect();
-      const res = await conn.query(q);
-      const arr = await res.toArray();
-      const end = performance.now();
+      setStatus("Running query...");
+      try {
+        const start = performance.now();
+        debugger;
+        const conn = await db.connect();
+        const res = await conn.query(q);
+        const arr = await res.toArray();
+        const end = performance.now();
 
-      const rows = arr.length;
-      const cols = arr[0] ? Object.keys(arr[0]).length : 0;
-      setResults(arr);
-      setStatus(
-        `Query finished in ${(end - start).toFixed(
-          1
-        )} ms. Shape: ${rows} rows × ${cols} columns. ${
-          addedLimit ? "added limit of " + limit + "to keep ui performant" : ""
-        }`
-      );
-    } catch (err: any) {
-      setStatus("Error: " + err.message);
-      setResults([]);
-    }
-  }, [db]);
-
-  const debouncedSetSql = useCallback(debounce(setSql, 500), []);
+        const rows = arr.length;
+        const cols = arr[0] ? Object.keys(arr[0]).length : 0;
+        setResults(arr);
+        setLastSql(query);
+        setStatus(
+          `Query finished in ${(end - start).toFixed(
+            1
+          )} ms. Shape: ${rows} rows × ${cols} columns. ${
+            addedLimit
+              ? "added limit of " + limit + "to keep ui performant"
+              : ""
+          }`
+        );
+      } catch (err: any) {
+        setStatus("Error: " + err.message);
+        setResults([]);
+      }
+    },
+    [db]
+  );
 
   const preview = async () => {
     const newSql = `SELECT * FROM read_parquet('uploaded.parquet') LIMIT ${sampleLimit};`;
@@ -89,7 +86,10 @@ export function ParquetViewer() {
   };
 
   const downloadXlsx = async (sql: string) => {
-    if (!conn || !db) return;
+    if (db == undefined) {
+      return;
+    }
+    const conn = await db?.connect();
     const outName = "export.xlsx";
     await conn.query(
       `INSTALL excel; LOAD excel;COPY (${sql}) TO '${outName}' (FORMAT XLSX, HEADER TRUE)`
@@ -117,54 +117,70 @@ export function ParquetViewer() {
   };
 
   return (
-    <div>
-      <h1>Parquet viewer powered by DuckDB</h1>
-      {dbError?.message}
-      <div className="controls">
-        <input
-          id="parquet"
-          type="file"
-          accept=".parquet"
-          onChange={handleFileChange}
-        />
-        <button
-          onClick={() => file && registerFile(file)}
-          disabled={!file || !db}
-        >
-          Load into DuckDB
-        </button>
-        <select
-          value={sampleLimit}
-          onChange={(e) => setSampleLimit(Number(e.target.value))}
-        >
-          <option value="25">25</option>
-          <option value="100">100</option>
-          <option value="500">500</option>
-        </select>
-        <button onClick={preview} disabled={!file || !db}>
-          Preview
-        </button>
+    <div className="ml-4">
+      <div className="controls flex items-center gap-2 mt-4">
+        <h1 className="text-2xl font-bold mt-4">
+          Parquet viewer powered by DuckDB
+        </h1>
+        <div className="small text-gray-500 mt-4">
+          Works fully in-browser (no server).
+        </div>
       </div>
-      <div className="small">Works fully in-browser (no server).</div>
+      {dbError?.message}
+      <div className="controls flex items-center gap-2 mt-4">
+        <label
+          htmlFor="parquet"
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
+        >
+          Browse Parquet File
+          <input
+            id="parquet"
+            type="file"
+            accept=".parquet"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </label>
+        {file && <span className="text-sm text-gray-700">{file.name}</span>}
+      </div>
 
-      <label>
+      <label className="block text-sm font-medium mb-2 mt-4 mr-4">
         SQL (you may use <code>read_parquet('uploaded.parquet')</code>):
       </label>
-      <textarea value={sql} onChange={(e) => debouncedSetSql(e.target.value)} />
+      <textarea
+        value={sql}
+        onChange={(e) => setSql(e.target.value)}
+        className="w-1/2 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm mr-4"
+        rows={5}
+      />
       <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-        <button onClick={() => runSQL(sql)} disabled={!file || !db}>
+        <button
+          onClick={() => runSQL(sql)}
+          disabled={!file || !db}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+        >
           Run SQL
         </button>
-        <button onClick={() => exportCsv(sql)} disabled={!file || !db}>
+        <button
+          onClick={() => exportCsv(sql)}
+          disabled={!file || !db}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+        >
           CSV
         </button>
-        <button onClick={() => downloadXlsx(sql)} disabled={!file || !db}>
+        <button
+          onClick={() => downloadXlsx(sql)}
+          disabled={!file || !db}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+        >
           Excel
         </button>
         <div className="small">{status}</div>
       </div>
+      <br></br>
+      <hr></hr>
 
-      <ResultsTable results={results} />
+      <ResultsTable key={lastSql} results={results} />
     </div>
   );
 }
