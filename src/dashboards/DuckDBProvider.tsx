@@ -5,19 +5,20 @@ import { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 interface DuckDBContextType {
   db: AsyncDuckDB | null;
   tableVersion: number;
+  loading: boolean;
   refreshTables: () => void;
 }
 
 const DuckDBContext = createContext<DuckDBContextType | null>(null);
 
 export function DuckDBProvider({ children }: { children: React.ReactNode }) {
-  const { db } = useDuckDb();
+  const { db , loading } = useDuckDb();
   const [tableVersion, setTableVersion] = useState(0);
 
   const refreshTables = useCallback(() => setTableVersion(v => v + 1), []);
 
   return (
-    <DuckDBContext.Provider value={{ db, tableVersion, refreshTables }}>
+    <DuckDBContext.Provider value={{ db, loading, tableVersion, refreshTables }}>
       {children}
     </DuckDBContext.Provider>
   );

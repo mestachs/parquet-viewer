@@ -3,10 +3,15 @@ import { useDuckDB } from './DuckDBProvider'
 import { DuckDBDataProtocol } from '@duckdb/duckdb-wasm'
 
 export function ParquetUploadWidget({ defaultUrl, onFileRegistered }: { defaultUrl?: string, onFileRegistered?: () => void }) {
-  const { db, refreshTables } = useDuckDB()
+  const { db, loading, refreshTables } = useDuckDB()
   const [tableName, setTableName] = useState('orgunits')
   const [status, setStatus] = useState('')
 
+  useEffect(() => {
+  if (loading) {
+    setStatus("Initiliazing duckdb")
+  }
+},[loading])
   useEffect(() => {
     if (defaultUrl && db) {
       const loadDefaultFile = async () => {
