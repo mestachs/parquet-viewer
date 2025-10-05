@@ -77,7 +77,6 @@ export const DashboardRenderer = React.memo(({
         if (!widgetConfig) {
           throw new Error("no widget key for " + item.widgetKey);
         }
-        console.log("DashboardRenderer - widgetConfig.params.groupBy:", widgetConfig.params.groupBy);
 
         const LazyWidgetComp = widgetMap[widgetConfig.type];
         if (!LazyWidgetComp) {

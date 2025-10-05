@@ -73,6 +73,57 @@
         "rowLimit": 100
       }
     },
+    "orgUnitsMap2": {
+      "type": "map",
+      "label": "Org Units Map - facilities",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "raw",
+        "latitude": "latitude",
+        "longitude": "longitude",
+        "adhocFilters": [
+          {
+          "subject": "org_unit_type_name",
+          "operator": "=",
+          "comparator": "Facility"
+          }
+        ],
+        "columns": [
+          {
+            "column": "org_unit_simplified_geom_geojson",
+            "label": "org_unit_simplified_geom_geojson"
+          },
+          {
+            "column": "org_unit_longitude",
+            "label": "longitude"
+          },
+          {
+            "column": "org_unit_latitude",
+            "label": "latitude"
+          },
+          {
+            "column": "org_unit_name",
+            "label": "org_unit_name"
+          },
+          {
+            "column": "level_1_name",
+            "label": "Pays"
+          },
+          {
+            "column": "level_2_name",
+            "label": "Région"
+          },
+          {
+            "column": "level_3_name",
+            "label": "District"
+          },
+          {
+            "column": "level_4_name",
+            "label": "Chiefdom"
+          }
+        ]
+      }
+    },
     "orgUnitsMap": {
       "type": "map",
       "label": "Org Units Map",
@@ -84,21 +135,37 @@
         "columns": [
           {
             "column": "org_unit_simplified_geom_geojson",
-            "label": "Simplified Geometry"
+            "label": "org_unit_simplified_geom_geojson"
           },
           {
             "column": "org_unit_longitude",
             "label": "longitude"
-          },          
+          },
           {
             "column": "org_unit_latitude",
             "label": "latitude"
-          },          
+          },
           {
-            "column": "org_unit_name"
+            "column": "org_unit_name",
+            "label": "org_unit_name"
+          },
+          {
+            "column": "level_1_name",
+            "label": "Pays"
+          },
+          {
+            "column": "level_2_name",
+            "label": "Région"
+          },
+          {
+            "column": "level_3_name",
+            "label": "District"
+          },
+          {
+            "column": "level_4_name",
+            "label": "Chiefdom"
           }
-        ],
-        "rowLimit": 1000
+        ]
       }
     },
     "allOrgunitsTable": {
@@ -134,7 +201,7 @@
           },
           {
             "column": "level_4_name",
-            "label": "Pays"
+            "label": "Chiefdom"
           }
         ],
         "rowLimit": 1000
@@ -212,7 +279,7 @@
         "y_axis_title_position": "Left",
         "sort_series_type": "sum",
         "color_scheme": "colorsOfRainbow",
-        "show_value": false,  
+        "show_value": false,
         "only_total": true,
         "show_legend": true,
         "legendType": "scroll",
@@ -270,9 +337,20 @@
       ]
     },
     {
-      "type": "ConditionalWidget",
-      "widgetKey": "orgUnitsMap",
-      "className": "col-span-3 h-[500px]"
+      "type": "Container",
+      "className": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
+      "children": [
+        {
+          "type": "ConditionalWidget",
+          "widgetKey": "orgUnitsMap",
+          "className": "col-span-3 h-[500px]"
+        },
+        {
+          "type": "ConditionalWidget",
+          "widgetKey": "orgUnitsMap2",
+          "className": "col-span-3 h-[500px]"
+        }
+      ]
     },
     {
       "type": "Widget",
