@@ -220,7 +220,7 @@
     },
     {
       "type": "Filters",
-      "className": "flex space-x-4 mb-4"
+      "className": "flex flex-wrap gap-4 mb-4"
     },
     {
       "type": "Container",
