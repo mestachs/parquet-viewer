@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface ResultsTableProps {
   results: any[];
@@ -6,7 +6,10 @@ interface ResultsTableProps {
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
   const [page, setPage] = useState(0);
+  const [sliderPage, setSliderPage] = useState(0); // New state for slider's immediate value
   const pageSize = 14;
+
+  const tableContainerRef = useRef<HTMLDivElement>(null); // Ref for the scrollable container
 
   if (!results || results.length === 0) {
     return <div className="small text-gray-500 mt-4">No rows</div>;
@@ -15,12 +18,43 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
   const cols = Object.keys(results[0]);
   const pageCount = Math.ceil(results.length / pageSize);
 
+  // Effect to update sliderPage when page changes (e.g., via Prev/Next buttons)
+  useEffect(() => {
+    setSliderPage(page);
+  }, [page]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const handlePrevPage = () => {
-    setPage((p) => Math.max(0, p - 1));
+    handlePageChange(Math.max(0, page - 1));
   };
 
   const handleNextPage = () => {
-    setPage((p) => Math.min(pageCount - 1, p + 1));
+    handlePageChange(Math.min(pageCount - 1, page + 1));
+  };
+
+  // Debounce logic using useEffect
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      // Only update the actual page if sliderPage is different from current page
+      // This prevents unnecessary re-renders if the slider is moved but lands on the same page
+      if (sliderPage !== page) {
+        handlePageChange(sliderPage);
+      }
+    }, 200); // 200ms debounce time
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [sliderPage, page]); // Re-run effect when sliderPage or page changes
+
+  const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSliderPage(Number(event.target.value)); // Update slider's visual position immediately
   };
 
   const PaginationControls = () => (
@@ -32,9 +66,21 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
       >
         Previous
       </button>
-      <span className="text-sm text-gray-700">
-        Page {page + 1} of {pageCount}
-      </span>
+      <div className="flex items-center space-x-2">
+        <label htmlFor="pageSlider" className="text-sm text-gray-700">Page:</label>
+        <input
+          id="pageSlider"
+          type="range"
+          min="0"
+          max={pageCount > 0 ? pageCount - 1 : 0}
+          value={sliderPage}
+          onChange={handleSliderChange}
+          className="w-64"
+        />
+        <span className="text-sm text-gray-700">
+          {page + 1} of {pageCount}
+        </span>
+      </div>
       <button
         onClick={handleNextPage}
         disabled={page === pageCount - 1}
@@ -48,9 +94,9 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
   return (
     <div className="mt-4">
       <PaginationControls />
-      <div className="overflow-x-auto">
+      <div ref={tableContainerRef} className="overflow-x-auto" style={{ maxHeight: '500px', overflowY: 'auto' }}>
         <table className="min-w-full divide-y divide-gray-200 shadow-sm border border-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 sticky top-0">
             <tr>
               {cols.map((c) => (
                 <th

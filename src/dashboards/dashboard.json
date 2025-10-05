@@ -224,7 +224,7 @@
     },
     {
       "type": "Container",
-      "className": "grid grid-cols-3 gap-4",
+      "className": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
       "children": [
         {
           "type": "Widget",
@@ -245,17 +245,17 @@
     },
     {
       "type": "Container",
-      "className": "grid grid-cols-3 gap-4",
+      "className": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
       "children": [
         {
           "type": "Widget",
           "widgetKey": "orgunitByTypePerLevel2",
-          "className": "col-span-3 h-[500px]"
+          "className": "col-span-1 md:col-span-2 lg:col-span-3 h-[500px]"
         },
         {
           "type": "Widget",
           "widgetKey": "orgUnitsByType",
-          "className": "col-span-2"
+          "className": "col-span-1 md:col-span-2 lg:col-span-2"
         }
       ]
     },
