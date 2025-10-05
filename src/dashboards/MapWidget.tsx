@@ -197,7 +197,7 @@ export function MapWidget({ config, data, filters }: MapWidgetProps) {
   const { tableVersion } = useDuckDB();
   return (
     <div>
-      <h2>{config.label}</h2>
+      <h2 className="mt-4">{config.label}</h2>
       <MapContainer
         key={"map-" + tableVersion}
         center={[0, 0]}
