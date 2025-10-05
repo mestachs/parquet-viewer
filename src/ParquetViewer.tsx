@@ -119,15 +119,13 @@ export function ParquetViewer() {
   return (
     <div className="ml-4">
       <div className="controls flex items-center gap-2 mt-4">
-        <h1 className="text-2xl font-bold mt-4">
+        <h1 className="text-2xl font-bold">
           Parquet viewer powered by DuckDB
         </h1>
-        <div className="small text-gray-500 mt-4">
+        <div className="small text-gray-500">
           Works fully in-browser (no server).
         </div>
-      </div>
-      {dbError?.message}
-      <div className="controls flex items-center gap-2 mt-4">
+        <div className="controls flex items-center gap-2 mt-4">
         <label
           htmlFor="parquet"
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
@@ -144,8 +142,11 @@ export function ParquetViewer() {
         {file && <span className="text-sm text-gray-700">{file.name}</span>}
       </div>
 
+      </div>
+      {dbError?.message}
+
       <label className="block text-sm font-medium mb-2 mt-4 mr-4">
-        SQL (you may use <code>read_parquet('uploaded.parquet')</code>):
+        SQL:
       </label>
       <textarea
         value={sql}
