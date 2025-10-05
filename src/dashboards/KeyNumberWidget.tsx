@@ -16,7 +16,7 @@ export function KeyNumberWidget({
   }, [data])
 
   return (
-    <div className="p-4 bg-white shadow rounded-2xl text-center">
+    <div className="bg-accent p-4 shadow rounded-2xl text-center">
       {config.label && <div className="text-gray-500 text-sm">{config.label}</div>}
       <div className="text-3xl font-semibold">
         {value !== null ? value.toLocaleString() : '—'}

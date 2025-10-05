@@ -75,13 +75,13 @@ export function FilterWidget({ config, onFilterChange, filters }) {
   }, [config.id, onFilterChange]);
 
   return (
-    <div className="p-4 border rounded-2xl bg-gray-50">
+    <div className="p-4 border rounded-2xl bg-neutral-content">
       <label className="block text-sm font-medium mb-2">{config.label}</label>
       <select
         multiple
         onChange={handleChange}
         value={selected}
-        className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        className="block w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
       >
         {options.map((option) => (
           <option key={option} value={option}>

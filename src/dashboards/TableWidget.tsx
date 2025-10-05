@@ -16,7 +16,7 @@ export function TableWidget({
   return (
     <table className="border text-sm w-full">
       <thead>
-        <tr>{cols.map(c => <th key={c} className="p-2 bg-gray-100">{c}</th>)}</tr>
+        <tr>{cols.map(c => <th key={c} className="p-2">{c}</th>)}</tr>
       </thead>
       <tbody>
         {data.map((r, i) => (

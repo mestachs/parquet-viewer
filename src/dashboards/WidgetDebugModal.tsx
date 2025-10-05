@@ -15,7 +15,7 @@ export function WidgetDebugModal({ isOpen, onClose, query, params }: WidgetDebug
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" onClick={onClose}>
-      <div className="relative top-20 mx-auto p-5 border w-1/2 shadow-lg rounded-md bg-white" onClick={e => e.stopPropagation()}>
+      <div className="relative top-20 mx-auto p-5 border w-1/2 shadow-lg rounded-md" onClick={e => e.stopPropagation()}>
         <div className="mt-3 text-center">
           <h3 className="text-lg leading-6 font-medium text-gray-900">Query Details</h3>
           <div className="mt-2 px-7 py-3">
