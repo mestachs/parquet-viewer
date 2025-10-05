@@ -159,13 +159,50 @@
         ],
         "rowLimit": 1
       }
+    },
+    "orgunitByTypePerLevel2": {
+      "label": "Orgunit by Type per level 2",
+      "certification_details": null,
+      "viz_type": "bar_chart",
+      "type": "bar_chart",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "aggregate",
+        "viz_type": "bar_chart",
+        "x_axis": {
+          "column": "org_unit_level_2_name"
+        },
+        "metrics": [
+          {
+            "label": "COUNT(org_unit_type_name)",
+            "sqlExpression": "COUNT(org_unit_type_name)"
+          }
+        ],
+        "groupby": [
+          "org_unit_type_name",
+          "org_unit_level_2_name"
+        ],
+        "y_axis_title": "",
+        "y_axis_title_margin": 15,
+        "y_axis_title_position": "Left",
+        "sort_series_type": "sum",
+        "color_scheme": "colorsOfRainbow",
+        "show_value": false,
+        "stack": "Stack",
+        "only_total": true,
+        "show_legend": true,
+        "legendType": "scroll",
+        "legendOrientation": "top",
+        "x_axis_time_format": "smart_date",
+        "xAxisLabelRotation": 90
+      }
     }
-
   },
   "layout": [
     {
       "type": "ParquetUploadWidget",
-      "className": "mb-4"
+      "className": "mb-4",
+      "defaultUrl": "/orgunits.parquet"
     },
     {
       "type": "Filters",
@@ -191,6 +228,11 @@
           "className": ""
         }
       ]
+    },
+    {
+      "type": "Widget",
+      "widgetKey": "orgunitByTypePerLevel2",
+      "className": "col-span-3 h-[500px]"
     },
     {
       "type": "Widget",

@@ -1,20 +1,21 @@
-import React, { useCallback } from "react";
+import React, { useCallback, Suspense, lazy } from "react";
 import { ParquetUploadWidget } from "./ParquetUploadWidget";
-import { KeyNumberWidget } from "./KeyNumberWidget";
-import { TableWidget } from "./TableWidget";
-import { MapWidget } from "./MapWidget";
 import { FilterWidget } from "./FilterWidget";
 import { useDuckDB } from "./DuckDBProvider";
+import { WidgetLoader } from "./WidgetLoader";
+import type { SupersetFilter } from "./supersetModel";
 
-const widgetMap: Record<string, any> = {
-  keyNumber: KeyNumberWidget,
-  table: TableWidget,
-  map: MapWidget,
+const widgetMap: Record<string, React.LazyExoticComponent<any>> = {
+  keyNumber: lazy(() => import("./KeyNumberWidget").then(module => ({ default: module.KeyNumberWidget }))),
+  table: lazy(() => import("./TableWidget").then(module => ({ default: module.TableWidget }))),
+  map: lazy(() => import("./MapWidget").then(module => ({ default: module.MapWidget }))),
+  bar_chart: lazy(() => import("./BarWidget").then(module => ({ default: module.BarWidget }))),
 };
 
 interface DashboardRendererProps {
   config: any;
-  filters: any[];
+  rawFilters: Record<string, any[]>;
+  supersetFilters: SupersetFilter[];
   onFilterChange: (id: string, value: any) => void;
   disableMap?: boolean;
 }
@@ -35,14 +36,15 @@ export function HideIfNoParquet({ children, itemKey }: HideIfNoParquetProps) {
 
 export const DashboardRenderer = React.memo(({
   config,
-  filters,
+  rawFilters,
+  supersetFilters,
   onFilterChange,
   disableMap = false,
 }: DashboardRendererProps) => {
   const renderLayoutItem = useCallback((item: any): React.ReactNode => {
     switch (item.type) {
       case "ParquetUploadWidget":
-        return <ParquetUploadWidget key="upload" className={item.className} />;
+        return <ParquetUploadWidget key="upload" className={item.className} defaultUrl={item.defaultUrl} />;
 
       case "Filters":
         return (
@@ -51,7 +53,7 @@ export const DashboardRenderer = React.memo(({
               <FilterWidget
                 key={"filter-"+f.id}
                 config={f}
-                filters={filters}
+                filters={rawFilters}
                 onFilterChange={onFilterChange}
               />
             ))}
@@ -69,17 +71,21 @@ export const DashboardRenderer = React.memo(({
           throw new Error("no widget key for " + item.widgetKey);
         }
 
-        const WidgetComp = widgetMap[widgetConfig.type];
-        if (!WidgetComp) {
+        const LazyWidgetComp = widgetMap[widgetConfig.type];
+        if (!LazyWidgetComp) {
           throw new Error(
             "no widget for " + item.widgetKey + " " + widgetConfig.type
           );
         }
 
         return (
-          <div key={item.widgetKey} className={item.className}>
-            <WidgetComp config={widgetConfig} filters={filters} />
-          </div>
+          <Suspense fallback={<div>Loading Widget...</div>} key={item.widgetKey}>
+            <WidgetLoader
+              config={widgetConfig}
+              filters={supersetFilters}
+              WidgetComponent={LazyWidgetComp}
+            />
+          </Suspense>
         );
       }
 
@@ -93,7 +99,7 @@ export const DashboardRenderer = React.memo(({
       default:
         return null;
     }
-  }, [config, filters, onFilterChange, disableMap]); // Add all dependencies
+  }, [config, rawFilters, supersetFilters, onFilterChange, disableMap]); // Add all dependencies
 
   return (
     <div className="space-y-4 p-4">

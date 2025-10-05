@@ -1,11 +1,36 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDuckDB } from './DuckDBProvider'
 import { DuckDBDataProtocol } from '@duckdb/duckdb-wasm'
 
-export function ParquetUploadWidget() {
+export function ParquetUploadWidget({ defaultUrl }: { defaultUrl?: string }) {
   const { db, refreshTables } = useDuckDB()
   const [tableName, setTableName] = useState('orgunits')
   const [status, setStatus] = useState('')
+
+  useEffect(() => {
+    if (defaultUrl && db) {
+      const loadDefaultFile = async () => {
+        setStatus('Loading default file...');
+        try {
+          const response = await fetch(defaultUrl);
+          const blob = await response.blob();
+          const file = new File([blob], defaultUrl.split('/').pop() || 'default.parquet');
+
+          await db.registerFileHandle(file.name, file, DuckDBDataProtocol.BROWSER_FILEREADER);
+          const conn = await db.connect();
+          await conn.query(`CREATE OR REPLACE TABLE ${tableName} AS SELECT * FROM read_parquet('${file.name}')`);
+          await conn.close();
+
+          setStatus(`✅ Registered table: ${tableName}`);
+          refreshTables();
+        } catch (err) {
+          console.error(err);
+          setStatus('❌ Failed to load default file');
+        }
+      };
+      loadDefaultFile();
+    }
+  }, [db, defaultUrl, tableName, refreshTables]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

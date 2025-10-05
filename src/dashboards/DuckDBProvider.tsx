@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import { useDuckDb } from "duckdb-wasm-kit";
 import { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 
@@ -14,7 +14,7 @@ export function DuckDBProvider({ children }: { children: React.ReactNode }) {
   const { db } = useDuckDb();
   const [tableVersion, setTableVersion] = useState(0);
 
-  const refreshTables = () => setTableVersion(v => v + 1);
+  const refreshTables = useCallback(() => setTableVersion(v => v + 1), []);
 
   return (
     <DuckDBContext.Provider value={{ db, tableVersion, refreshTables }}>

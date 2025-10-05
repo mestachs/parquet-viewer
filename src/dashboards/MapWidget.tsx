@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import { QueryModel } from "./QueryModel";
-import { useDuckDB } from "./DuckDBProvider";
-import { SupersetWidgetConfig, SupersetFilter } from "./supersetModel";
-import DeckGL, { MapView } from "deck.gl";
+import { useMemo } from "react";
+import type { SupersetWidgetConfig, SupersetFilter } from "./supersetModel";
+import DeckGL from "deck.gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as Layers from "@deck.gl/layers";
 
@@ -16,48 +14,33 @@ const INITIAL_VIEW_STATE = {
 
 export function MapWidget({
   config,
-  filters = [],
+  data,
 }: {
   config: SupersetWidgetConfig;
   filters?: SupersetFilter[];
+  data: any[];
 }) {
-  const { db, tableVersion } = useDuckDB();
-  const [data, setData] = useState<any[]>([]);
-
-  useEffect(() => {
-    console.log(tableVersion);
-    if (!db || tableVersion < 1) {
-      return;
-    }
-    debugger;
-    const qm = new QueryModel(db, config, filters);
-    qm.execute().then((rows) => {
-      debugger
-      const geojsonData = rows.reduce((acc, row) => {
-        if (row && row.simplified_geom_geojson) {
-          try {
-            acc.push(JSON.parse(row.simplified_geom_geojson));
-          } catch (error) {
-            console.error("Error parsing GeoJSON:", error);
-          }
+  const geojsonData = useMemo(() => {
+    return data.reduce((acc, row) => {
+      if (row && row.simplified_geom_geojson) {
+        try {
+          acc.push(JSON.parse(row.simplified_geom_geojson));
+        } catch (error) {
+          console.error("Error parsing GeoJSON:", error);
         }
-        return acc;
-      }, [] as any[]);
-      debugger;
-      setData(geojsonData);
-    });
-  }, [db, tableVersion]);
+      }
+      return acc;
+    }, [] as any[]);
+  }, [data]);
 
-  console.log("Rendering MapWidget", data?.length);
-
-  if (tableVersion < 1) {
+  if (data.length === 0) {
     return <div>Map will load after initial data is loaded.</div>;
   }
 
   const layers = [
     new Layers.GeoJsonLayer({
       id: "geojson-layer",
-      data,
+      data: geojsonData,
       pickable: true,
       stroked: false,
       filled: true,
@@ -71,10 +54,6 @@ export function MapWidget({
       getElevation: 30,
     }),
   ];
-
-  if (tableVersion == 0) {
-    return <span>Waiting</span>;
-  }
 
   return (
     <DeckGL

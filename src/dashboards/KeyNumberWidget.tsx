@@ -1,27 +1,19 @@
-import { useEffect, useState } from 'react'
-import { QueryModel } from './QueryModel'
-import { useDuckDB } from './DuckDBProvider'
-import { SupersetWidgetConfig, SupersetFilter } from './supersetModel'
+import { useMemo } from 'react'
+import type { SupersetWidgetConfig, SupersetFilter } from './supersetModel'
 
 export function KeyNumberWidget({
   config,
-  filters = [],
+  data,
 }: {
   config: SupersetWidgetConfig
   filters?: SupersetFilter[]
+  data: any[]
 }) {
-  const { db, tableVersion } = useDuckDB()
-  const [value, setValue] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (!db) return
-    const qm = new QueryModel(db, config, filters)
-    qm.execute().then(rows => {
-      if (rows.length === 0) return setValue(null)
-      const first = Object.values(rows[0])[0]
-      setValue(typeof first === 'number' ? first : Number(first))
-    })
-  }, [db, config, filters, tableVersion])
+  const value = useMemo(() => {
+    if (data.length === 0) return null
+    const first = Object.values(data[0])[0]
+    return typeof first === 'number' ? first : Number(first)
+  }, [data])
 
   return (
     <div className="p-4 bg-white shadow rounded-2xl text-center">
