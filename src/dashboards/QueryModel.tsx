@@ -12,10 +12,12 @@ export class QueryModel {
     console.log("QueryModel constructor - incoming filters:", filters);
     this.filters = Array.isArray(filters) ? filters : [];
     console.log("QueryModel constructor - this.filters after assignment:", this.filters);
+    console.log("QueryModel constructor - this.config.params.groupBy:", this.config.params.groupBy);
   }
 
   buildSQL(): { sql: string; params: any[] } {
     const p = this.config.params;
+    console.log("QueryModel buildSQL - p.groupBy:", p.groupBy);
     const table = p.dataSource.split("__")[0];
     const isAgg = p.queryMode === "aggregate";
     const selectParts: string[] = [];

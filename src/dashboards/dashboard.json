@@ -162,33 +162,47 @@
     },
     "orgunitByTypePerLevel2": {
       "label": "Orgunit by Type per level 2",
-      "certification_details": null,
-      "viz_type": "bar_chart",
       "type": "bar_chart",
       "params": {
         "dataSource": "orgunits",
-        "queryMode": "aggregate",
         "viz_type": "bar_chart",
+        "queryMode": "aggregate",
+        "stack": "Stack",
         "x_axis": {
-          "column": "level_2_name"
+          "column": "level_2_name",
+          "sort_series": "name",
+          "sort_series_ascending": true,
+          "title": {
+            "label": "",
+            "margin": 15
+          }
         },
         "metrics": [
           {
+            "aggregate": "COUNT",
+            "column": {
+              "column_name": "org_unit_type_name",
+              "filterable": true,
+              "groupby": true,
+              "type": "TEXT"
+            },
+            "expressionType": "SIMPLE",
+            "hasCustomLabel": false,
             "label": "COUNT(org_unit_type_name)",
-            "sqlExpression": "COUNT(org_unit_type_name)"
+            "sqlExpression": null
           }
         ],
-        "groupby": [
-          "org_unit_type_name",
-          "level_2_name"
+        "groupBy": [
+          "level_2_name",
+          "org_unit_type_name"
         ],
+        "rowLimit": 10000,
         "y_axis_title": "",
         "y_axis_title_margin": 15,
         "y_axis_title_position": "Left",
         "sort_series_type": "sum",
         "color_scheme": "colorsOfRainbow",
-        "show_value": false,
-        "stack": "Stack",
+        "show_value": false,  
         "only_total": true,
         "show_legend": true,
         "legendType": "scroll",

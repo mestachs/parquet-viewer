@@ -1,6 +1,25 @@
 
 import React from 'react';
 
+function prettyPrintSql(sql: string): string {
+  const keywords = [
+    'SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'HAVING',
+    'AND', 'OR', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN',
+    'ON', 'LIMIT', 'OFFSET', 'UNION', 'INSERT INTO', 'UPDATE', 'DELETE FROM'
+  ];
+
+  let formattedSql = sql;
+
+  keywords.forEach(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+    formattedSql = formattedSql.replace(regex, `\n${keyword}`);
+  });
+
+  formattedSql = formattedSql.trim();
+
+  return formattedSql;
+}
+
 interface WidgetDebugModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,8 +32,10 @@ export function WidgetDebugModal({ isOpen, onClose, query, params }: WidgetDebug
     return null;
   }
 
+  const prettyQuery = prettyPrintSql(query);
+
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" onClick={onClose}>
+    <div className="fixed inset-0 bg-white bg-opacity-50 overflow-y-auto h-full w-full" onClick={onClose}>
       <div className="relative top-20 mx-auto p-5 border w-1/2 shadow-lg rounded-md" onClick={e => e.stopPropagation()}>
         <div className="mt-3 text-center">
           <h3 className="text-lg leading-6 font-medium text-gray-900">Query Details</h3>
@@ -22,7 +43,7 @@ export function WidgetDebugModal({ isOpen, onClose, query, params }: WidgetDebug
             <p className="text-sm text-gray-500">
               <strong>Query:</strong>
             </p>
-            <pre className="bg-gray-100 p-2 rounded-md text-left" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}><code>{query}</code></pre>
+            <pre className="bg-gray-100 p-2 rounded-md text-left" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}><code>{prettyQuery}</code></pre>
             <p className="text-sm text-gray-500 mt-4">
               <strong>Parameters:</strong>
             </p>

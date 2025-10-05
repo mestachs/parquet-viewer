@@ -143,7 +143,7 @@ describe('QueryModel', () => {
 
   it('should build correct SQL for BarWidget configuration', () => {
     const config: SupersetWidgetConfig = {
-      sliceName: "Orgunit by Type per level 2",
+      label: "Orgunit by Type per level 2",
       vizType: "bar_chart",
       params: {
         dataSource: "orgunits",
