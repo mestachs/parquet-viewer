@@ -2,9 +2,20 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import { useDuckDb } from "duckdb-wasm-kit";
 import { ResultsTable } from "./ResultsTable";
+import { useNavigate } from "react-router-dom";
 
 export function ParquetViewer() {
   const { db, loading: dbLoading, error: dbError } = useDuckDb();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has("dashboard")) {
+      navigate("/dashboard/orgunits");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [navigate]);
+
   const [status, setStatus] = useState("Loading duckdb-wasm...");
   const [sql, setSql] = useState(
     "SELECT * FROM read_parquet('uploaded.parquet')"
@@ -13,7 +24,6 @@ export function ParquetViewer() {
 
   const [results, setResults] = useState<any[]>([]);
   const [file, setFile] = useState<File | null>(null);
-  const [sampleLimit, setSampleLimit] = useState(25);
 
   const registerFile = async (file: File) => {
     if (!db) return;
@@ -60,12 +70,6 @@ export function ParquetViewer() {
     },
     [db]
   );
-
-  const preview = async () => {
-    const newSql = `SELECT * FROM read_parquet('uploaded.parquet') LIMIT ${sampleLimit};`;
-    setSql(newSql);
-    await runSQL(newSql);
-  };
 
   const exportCsv = async (sql: string) => {
     if (db == undefined) {
@@ -118,14 +122,11 @@ export function ParquetViewer() {
   return (
     <div className="ml-4">
       <div className="controls flex items-center gap-2 mt-4">
-        <h1 className="text-2xl font-bold">
-          Parquet viewer powered by DuckDB
-        </h1>
+        <h1 className="text-2xl font-bold">Parquet viewer powered by DuckDB</h1>
         <div className="small text-gray-500">
           Works fully in-browser (no server).
         </div>
         <div className="controls flex items-center gap-2 mt-4">
-      
           <input
             id="parquet"
             type="file"
@@ -133,16 +134,11 @@ export function ParquetViewer() {
             onChange={handleFileChange}
             className="file-input"
           />
-    
-     
-      </div>
-
+        </div>
       </div>
       {dbError?.message}
 
-      <label className="block text-sm font-medium mb-2 mt-4 mr-4">
-        SQL:
-      </label>
+      <label className="block text-sm font-medium mb-2 mt-4 mr-4">SQL:</label>
       <textarea
         value={sql}
         onChange={(e) => setSql(e.target.value)}
