@@ -146,7 +146,7 @@ export function ParquetViewer() {
       <textarea
         value={sql}
         onChange={(e) => setSql(e.target.value)}
-        className="w-1/2 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm mr-4"
+        className="textarea w-1/2 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm mr-4"
         rows={5}
       />
       <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>

@@ -2,3 +2,7 @@
 @plugin "daisyui" {
   themes: emerald;
 }
+
+.dropdown-content {
+  background-color: beige;
+}
