@@ -9,7 +9,8 @@ const widgetMap: Record<string, React.LazyExoticComponent<any>> = {
   keyNumber: lazy(() => import("./KeyNumberWidget").then(module => ({ default: module.KeyNumberWidget }))),
   table: lazy(() => import("./TableWidget").then(module => ({ default: module.TableWidget }))),
   map: lazy(() => import("./MapWidget").then(module => ({ default: module.MapWidget }))),
-  bar_chart: lazy(() => import("./BarWidget").then(module => ({ default: module.BarWidget }))),
+  bar: lazy(() => import("./BarWidget").then(module => ({ default: module.BarWidget }))),
+  timeseries: lazy(() => import("./TimeSeriesWidget").then(module => ({ default: module.TimeSeriesWidget }))),
 };
 
 interface DashboardRendererProps {

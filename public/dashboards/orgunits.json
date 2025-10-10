@@ -239,10 +239,9 @@
     },
     "orgunitByTypePerLevel2": {
       "label": "Orgunit by Type per level 2",
-      "type": "bar_chart",
+      "type": "bar",
       "params": {
         "dataSource": "orgunits",
-        "viz_type": "bar_chart",
         "queryMode": "aggregate",
         "stack": "Stack",
         "x_axis": {
@@ -286,6 +285,26 @@
         "legendOrientation": "top",
         "x_axis_time_format": "smart_date",
         "xAxisLabelRotation": 90
+      }
+    },
+    "orgUnitsOverTime": {
+      "type": "timeseries",
+      "label": "Org Units Over Time",
+      "params": {
+        "dataSource": "orgunits",
+        "queryMode": "aggregate",
+        "x_axis": "org_unit_updated_at",
+        "time_grain_sqla": "PT1S",
+        "metrics": [
+          {
+            "label": "count_orgunits",
+            "sqlExpression": "COUNT(*)"
+          }
+        ],
+        "groupBy": [
+          "org_unit_type_name"
+        ],
+        "rowLimit": 10000
       }
     }
   },
@@ -333,9 +352,15 @@
           "type": "Widget",
           "widgetKey": "orgUnitsByType",
           "className": "col-span-1 md:col-span-2 lg:col-span-2"
+        },
+        {
+          "type": "Widget",
+          "widgetKey": "orgUnitsOverTime",
+          "className": "col-span-1 md:col-span-2 lg:col-span-3 h-[500px]"
         }
       ]
     },
+
     {
       "type": "Container",
       "className": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",

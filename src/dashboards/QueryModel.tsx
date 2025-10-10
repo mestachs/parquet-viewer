@@ -1,6 +1,19 @@
 import type { SupersetWidgetConfig, SupersetFilter } from "./supersetModel";
 import { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 
+function convertTimeGrain(timeGrain: string): string {
+  const mapping: Record<string, string> = {
+    P1D: "DAY",
+    P1W: "WEEK",
+    P1M: "MONTH",
+    P1Y: "YEAR",
+    PT1H: "HOUR",
+    PT1M: "MINUTE",
+    PT1S: "SECOND",
+  };
+  return mapping[timeGrain] || timeGrain;
+}
+
 export class QueryModel {
   private config: SupersetWidgetConfig;
   private filters: SupersetFilter[];
@@ -23,7 +36,13 @@ export class QueryModel {
     const selectParts: string[] = [];
 
     if (isAgg) {
-      if (p.groupBy?.length) {
+      if (p.time_grain_sqla && p.x_axis) {
+        const timeGrain = convertTimeGrain(p.time_grain_sqla);
+        selectParts.push(`DATE_TRUNC('${timeGrain}', ${p.x_axis}) as ${p.x_axis}`);
+        if (p.groupBy?.length) {
+          selectParts.push(...p.groupBy);
+        }
+      } else if (p.groupBy?.length) {
         selectParts.push(...p.groupBy);
       }
       for (const m of p.metrics ?? []) {
@@ -84,7 +103,15 @@ export class QueryModel {
 
     if (whereClauses.length) sql += ` WHERE ${whereClauses.join(" AND ")}`;
 
-    if (isAgg && p.groupBy?.length) sql += ` GROUP BY ${p.groupBy.join(", ")}`;
+    if (isAgg) {
+        let groupByParts = p.groupBy ? [...p.groupBy] : [];
+        if (p.time_grain_sqla && p.x_axis) {
+            groupByParts.push(p.x_axis);
+        }
+        if (groupByParts.length) {
+            sql += ` GROUP BY ${[...new Set(groupByParts)].join(", ")}`;
+        }
+    }
 
     if (p.rowLimit) sql += ` LIMIT ${p.rowLimit}`;
 
