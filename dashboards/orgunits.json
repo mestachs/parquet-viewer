@@ -294,7 +294,7 @@
     },
     "orgUnitsOverTime": {
       "type": "timeseries",
-      "label": "Org Units Over Time",
+      "label": "Org Unit Modifications Over Time",
       "params": {
         "dataSource": "orgunits",
         "queryMode": "aggregate",
