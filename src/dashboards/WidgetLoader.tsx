@@ -14,7 +14,7 @@ export function WidgetLoader({ config, filters, WidgetComponent }: WidgetLoaderP
   const { data, query, params } = useQueryModel(config, filters);
 
   return (
-    <WidgetContainer config={config} filters={filters} query={query} params={params}>
+    <WidgetContainer config={config} filters={filters} query={query} params={params} data={data}>
       <WidgetComponent config={config} filters={filters} data={data} />
     </WidgetContainer>
   );

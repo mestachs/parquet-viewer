@@ -102,7 +102,8 @@ export class QueryModel {
     if (isAgg) {
         let groupByParts = p.groupBy ? [...p.groupBy] : [];
         if (p.time_grain_sqla && p.x_axis) {
-            groupByParts.push(p.x_axis);
+            const timeGrain = convertTimeGrain(p.time_grain_sqla);
+            groupByParts.push(`DATE_TRUNC('${timeGrain}', ${p.x_axis})`);
         }
         if (groupByParts.length) {
             sql += ` GROUP BY ${[...new Set(groupByParts)].join(", ")}`;

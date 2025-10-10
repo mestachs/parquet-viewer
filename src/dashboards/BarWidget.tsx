@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { SupersetWidgetConfig, SupersetFilter } from "./supersetModel";
 import * as echarts from "echarts";
 import type { EChartsOption } from "echarts";
+import { useColor } from "./ColorContext";
 
 export function BarWidget({
   config,
@@ -13,6 +14,7 @@ export function BarWidget({
 }) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
+  const colorContext = useColor();
 
   useEffect(() => {
     if (chartRef.current && data.length > 0) {
@@ -21,12 +23,8 @@ export function BarWidget({
       }
 
       const { params } = config;
-      console.log("BarWidget - params.groupby:", params.groupby);
       const xAxisColumn = params.x_axis.column;
-      console.log("xAxisColumn:", xAxisColumn);
-      console.log("config.params.groupby:", config.params.groupby);
-      const seriesColumn = params.metrics[0].column.column_name 
-      console.log("seriesColumn:", seriesColumn);
+      const seriesColumn = params.metrics[0].column.column_name;
       const metricConfig = config.params.metrics?.[0];
       let metricLabel: string;
 
@@ -44,16 +42,29 @@ export function BarWidget({
 
       const xAxisData = Array.from(
         new Set(data.map((row) => row[xAxisColumn]))
-      );
+      ).sort();
 
       let series = [];
       let legendData: string[] = [];
       if (seriesColumn) {
         const uniqueSeriesValues = Array.from(
           new Set(data.map((row) => row[seriesColumn]).filter((r) => r))
-        );
+        ).sort();
         legendData = uniqueSeriesValues as string[];
+
+        const seriesDataMap = new Map<string, Map<string, number>>();
+        uniqueSeriesValues.forEach((s) => seriesDataMap.set(s, new Map()));
+
+        data.forEach((row) => {
+            const xVal = row[xAxisColumn];
+            const seriesVal = row[seriesColumn];
+            if (xVal && seriesVal) {
+                seriesDataMap.get(seriesVal)!.set(xVal, row[metricLabel]);
+            }
+        });
+
         series = uniqueSeriesValues.map((seriesVal) => {
+          const color = colorContext?.getColor(seriesColumn, seriesVal);
           return {
             name: seriesVal,
             type: "bar",
@@ -61,11 +72,9 @@ export function BarWidget({
             emphasis: {
               focus: "series",
             },
+            itemStyle: { color },
             data: xAxisData.map((xVal) => {
-              const row = data.find(
-                (r) => r[xAxisColumn] === xVal && r[seriesColumn] === seriesVal
-              );
-              return row ? row[metricLabel] : 0;
+              return seriesDataMap.get(seriesVal)?.get(xVal) || 0;
             }),
             label: {
               show: config.params.show_value,
@@ -138,7 +147,7 @@ export function BarWidget({
 
       chartInstance.current.setOption(option);
     }
-  }, [data, config]);
+  }, [data, config, colorContext]);
 
   useEffect(() => {
     return () => {

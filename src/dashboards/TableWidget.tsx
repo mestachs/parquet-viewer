@@ -27,7 +27,7 @@ export function TableWidget({
         <tbody>
           {data.slice(page * pageSize, (page + 1) * pageSize).map((r, i) => (
             <tr key={i} className="border-t">
-              {dataKeys.map(c => <td key={c} className="p-2">{r[c] ?? ''}</td>)}
+              {dataKeys.map(c => <td key={c} className="p-2 whitespace-nowrap">{r[c] ?? ''}</td>)}
             </tr>
           ))}
         </tbody>

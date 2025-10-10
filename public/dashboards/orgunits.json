@@ -1,4 +1,9 @@
 {
+  "colorMapping": {
+    "org_unit_type_name": {
+      "Facility": "#badbad"
+    }
+  },
   "filters": [
     {
       "id": "level_1_name",
@@ -294,7 +299,7 @@
         "dataSource": "orgunits",
         "queryMode": "aggregate",
         "x_axis": "org_unit_updated_at",
-        "time_grain_sqla": "P1M",
+        "time_grain_sqla": "P1W",
         "metrics": [
           {
             "label": "count_orgunits",
@@ -320,60 +325,59 @@
     },
     {
       "type": "Container",
-      "className": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
+      "className": "grid grid-cols-1 lg:grid-cols-3 gap-4",
       "children": [
         {
-          "type": "Widget",
-          "widgetKey": "totalOrgUnits",
-          "className": ""
-        },
-        {
-          "type": "Widget",
-          "widgetKey": "orgUnitsWithPoints",
-          "className": ""
-        },
-        {
-          "type": "Widget",
-          "widgetKey": "orgUnitsWithGeoJson",
-          "className": ""
-        }
-      ]
-    },
-    {
-      "type": "Container",
-      "className": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
-      "children": [
-        {
-          "type": "Widget",
-          "widgetKey": "orgunitByTypePerLevel2",
-          "className": "col-span-1 md:col-span-2 lg:col-span-3 h-[500px]"
+          "type": "Container",
+          "className": "grid grid-cols-1 gap-4",
+          "children": [
+            {
+              "type": "Widget",
+              "widgetKey": "totalOrgUnits",
+              "className": ""
+            },
+            {
+              "type": "Widget",
+              "widgetKey": "orgUnitsWithPoints",
+              "className": ""
+            },
+            {
+              "type": "Widget",
+              "widgetKey": "orgUnitsWithGeoJson",
+              "className": ""
+            }
+          ]
         },
         {
           "type": "Widget",
           "widgetKey": "orgUnitsByType",
-          "className": "col-span-1 md:col-span-2 lg:col-span-2"
+          "className": ""
         },
         {
           "type": "Widget",
-          "widgetKey": "orgUnitsOverTime",
-          "className": "col-span-1 md:col-span-2 lg:col-span-3 h-[500px]"
+          "widgetKey": "orgunitByTypePerLevel2",
+          "className": ""
         }
       ]
     },
-
     {
       "type": "Container",
-      "className": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
+      "className": "grid grid-cols-1 lg:grid-cols-3 gap-4",
       "children": [
+        {
+          "type": "Widget",
+          "widgetKey": "orgUnitsOverTime",
+          "className": "lg:col-span-1"
+        },
         {
           "type": "ConditionalWidget",
           "widgetKey": "orgUnitsMap",
-          "className": "col-span-3 h-[500px]"
+          "className": "lg:col-span-1"
         },
         {
           "type": "ConditionalWidget",
           "widgetKey": "orgUnitsMap2",
-          "className": "col-span-3 h-[500px]"
+          "className": "lg:col-span-1"
         }
       ]
     },
