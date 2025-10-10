@@ -75,7 +75,7 @@ export function FilterWidget({ config, onFilterChange, filters }) {
   }, [config.id, onFilterChange]);
 
   return (
-    <div className="p-4 border rounded-2xl bg-neutral-content">
+    <div className="p-4 bg-neutral-content">
       <label className="block text-sm font-medium mb-2">{config.label}</label>
       <select
         multiple
