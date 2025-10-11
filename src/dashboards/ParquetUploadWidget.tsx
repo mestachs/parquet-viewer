@@ -1,36 +1,53 @@
-import { useState, useEffect } from 'react'
-import { useDuckDB } from './DuckDBProvider'
-import { DuckDBDataProtocol } from '@duckdb/duckdb-wasm'
+import { useState, useEffect } from "react";
+import { useDuckDB } from "./DuckDBProvider";
+import { DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
 
-export function ParquetUploadWidget({ defaultUrl, onFileRegistered }: { defaultUrl?: string, onFileRegistered?: () => void }) {
-  const { db, loading, refreshTables } = useDuckDB()
-  const [tableName, setTableName] = useState('orgunits')
-  const [status, setStatus] = useState('')
+export function ParquetUploadWidget({
+  defaultUrl,
+  onFileRegistered,
+}: {
+  defaultUrl?: string;
+  onFileRegistered?: () => void;
+}) {
+  const { db, loading, refreshTables } = useDuckDB();
+  const [tableName, setTableName] = useState("orgunits");
+  const [status, setStatus] = useState("");
+  const [mode, setMode] = useState("");
 
   useEffect(() => {
-  if (loading) {
-    setStatus("Initiliazing duckdb")
-  }
-},[loading])
+    if (loading) {
+      setStatus("Initiliazing duckdb");
+    }
+  }, [loading]);
   useEffect(() => {
     if (defaultUrl && db) {
       const loadDefaultFile = async () => {
-        setStatus('Loading default file...');
+        setStatus("Loading default file...");
         try {
           const response = await fetch(defaultUrl);
           const blob = await response.blob();
-          const file = new File([blob], defaultUrl.split('/').pop() || 'default.parquet');
+          const file = new File(
+            [blob],
+            defaultUrl.split("/").pop() || "default.parquet"
+          );
 
-          await db.registerFileHandle(file.name, file, DuckDBDataProtocol.BROWSER_FILEREADER);
+          await db.registerFileHandle(
+            file.name,
+            file,
+            DuckDBDataProtocol.BROWSER_FILEREADER
+          );
           const conn = await db.connect();
-          await conn.query(`CREATE OR REPLACE TABLE ${tableName} AS SELECT * FROM read_parquet('${file.name}')`);
+          await conn.query(
+            `CREATE OR REPLACE TABLE ${tableName} AS SELECT * FROM read_parquet('${file.name}')`
+          );
           await conn.close();
 
           setStatus(`✅ Registered table: ${tableName}`);
+          setMode("compact");
           refreshTables();
         } catch (err) {
           console.error(err);
-          setStatus('❌ Failed to load default file');
+          setStatus("❌ Failed to load default file");
         }
       };
       loadDefaultFile();
@@ -38,53 +55,69 @@ export function ParquetUploadWidget({ defaultUrl, onFileRegistered }: { defaultU
   }, [db, defaultUrl, tableName, refreshTables]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !db) return
+    const file = e.target.files?.[0];
+    if (!file || !db) return;
 
-    setStatus('Registering...')
+    setStatus("Registering...");
 
     try {
       // Register file as a virtual DuckDB table
-      await db.registerFileHandle(file.name, file, DuckDBDataProtocol.BROWSER_FILEREADER)
-      const conn = await db.connect()
-      await conn.query(`CREATE OR REPLACE TABLE ${tableName} AS SELECT * FROM read_parquet('${file.name}')`)
-      await conn.close()
+      await db.registerFileHandle(
+        file.name,
+        file,
+        DuckDBDataProtocol.BROWSER_FILEREADER
+      );
+      const conn = await db.connect();
+      await conn.query(
+        `CREATE OR REPLACE TABLE ${tableName} AS SELECT * FROM read_parquet('${file.name}')`
+      );
+      await conn.close();
 
-      setStatus(`✅ Registered table: ${tableName}`)
-      refreshTables()
+      setStatus(`✅ Registered table: ${tableName}`);
+      setMode("compact");
+      refreshTables();
       if (onFileRegistered) {
         onFileRegistered();
       }
     } catch (err) {
-      console.error(err)
-      setStatus('❌ Failed to register file')
+      console.error(err);
+      setStatus("❌ Failed to register file");
     }
-  }
+  };
+
+  const isCompact = mode == "compact";
 
   return (
     <div className="p-4 border rounded-2xl bg-gray-50">
-      <div className='flex items-center gap-2'>
-        <label className="block text-sm font-medium mb-2">Upload Parquet File</label>
-        <input type="file" accept=".parquet" className="btn" onChange={handleUpload} />
-      </div>
-      <div className='flex items-center gap-2'>
-        <label className="block text-sm font-medium mb-2">Table Name</label>
+      <div className="flex items-center gap-2">
+        <label className="block text-sm font-medium mb-2">
+          Upload Parquet File
+        </label>
         <input
-          type="text"
-          value={tableName}
-          onChange={e => setTableName(e.target.value)}
-          className="border rounded px-2 py-1"
+          type="file"
+          accept=".parquet"
+          className="btn"
+          onChange={handleUpload}
         />
       </div>
+      {!isCompact && (
+        <div className="flex items-center gap-2">
+          <label className="block text-sm font-medium mb-2">Table Name</label>
+          <input
+            type="text"
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+            className="border rounded px-2 py-1"
+          />
+        </div>
+      )}
 
-
-      {status && <div className="mt-2 text-sm text-gray-700">{status}</div>}
-      {tableName && (
+      {!isCompact && status && <div className="mt-2 text-sm text-gray-700">{status}</div>}
+      {!isCompact && tableName && (
         <div className="mt-1 text-xs text-gray-500">
           Table name: <code>{tableName}</code>
         </div>
       )}
     </div>
-  )
+  );
 }
-

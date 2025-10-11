@@ -116,7 +116,7 @@ export const DashboardRenderer = React.memo(({
 
       case "Container":
         return (
-          <div key={item.key || item.type} className={item.className}> {/* Use item.type as fallback for key */}
+          <div key={item.key || item.type} className={item.className}>
             {item.children?.map((c: any) => renderLayoutItem(c))}
           </div>
         );
@@ -129,7 +129,7 @@ export const DashboardRenderer = React.memo(({
   return (
     <div className="space-y-4 p-4">
       {config.layout?.map((item: any) =>
-        item.type == "ParquetUploadWidget" ? (
+        item.type == "ParquetUploadWidget" || item.type == "Container"? (
           renderLayoutItem(item)
         ) : (
           <HideIfNoParquet key={item.key || item.type} itemKey={item.key || item.type}> {/* Pass itemKey */}

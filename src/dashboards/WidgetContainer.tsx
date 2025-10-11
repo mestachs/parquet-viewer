@@ -69,7 +69,7 @@ export function WidgetContainer({ children, config, filters, query, params, data
   }
 
   return (
-    <div className="relative card bg-base-100 shadow-xl p-4">
+    <div className="relative card bg-base-100 shadow-xl p-4 m-1">
       <div className="flex justify-between items-center mb-4">
         {renderTitle()}
         <div className="flex items-center">

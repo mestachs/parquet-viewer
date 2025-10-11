@@ -104,6 +104,15 @@ export function TimeSeriesWidget({
             type: "shadow",
           },
         },
+        toolbox: {
+          feature: {
+            dataZoom: {
+            },
+            restore: {},
+            saveAsImage: {}
+          }
+        },
+                  
         legend: {
           show: config.params.show_legend,
           type: config.params.legendType,
