@@ -1,5 +1,6 @@
 import type { SupersetWidgetConfig, SupersetFilter } from "./supersetModel";
 import { AsyncDuckDB } from "@duckdb/duckdb-wasm";
+import { createJinjaSQL } from "./sql";
 
 function convertTimeGrain(timeGrain: string): string {
   const mapping: Record<string, string> = {
@@ -27,6 +28,14 @@ export class QueryModel {
 
   buildSQL(): { sql: string; params: any[] } {
     const p = this.config.params;
+    if (p.customSql) {
+      const jinjaSql = createJinjaSQL();
+      const template = p.customSql.join('\n');
+      const context = {
+        filters: this.filters
+      };
+      return jinjaSql.compile(template, context);
+    }
     const table = p.dataSource.split("__")[0];
     const isAgg = p.queryMode === "aggregate";
     const selectParts: string[] = [];

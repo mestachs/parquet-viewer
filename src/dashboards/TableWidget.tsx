@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { SupersetWidgetConfig, SupersetFilter } from './supersetModel'
+import { LinkCell } from './LinkCell';
 
 export function TableWidget({
   config,
@@ -11,7 +12,7 @@ export function TableWidget({
 }) {
   const [page, setPage] = useState(0)
   const pageSize = 10
-  if (!data.length) return <div>Loading…</div>
+  if (!data.length) return <div>No data.</div>
 
   const cols = config.params.columns ? config.params.columns.map(col => col.label || col.column) : Object.keys(data[0])
   const dataKeys = config.params.columns ? config.params.columns.map(col => col.label || col.column) : Object.keys(data[0])
@@ -27,7 +28,7 @@ export function TableWidget({
         <tbody>
           {data.slice(page * pageSize, (page + 1) * pageSize).map((r, i) => (
             <tr key={i} className="border-t">
-              {dataKeys.map(c => <td key={c} className="p-2 whitespace-nowrap">{r[c] ?? ''}</td>)}
+              {dataKeys.map(c => <td key={c} className="p-2 whitespace-nowrap"><LinkCell value={r[c]} /></td>)}
             </tr>
           ))}
         </tbody>

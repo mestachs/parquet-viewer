@@ -88,9 +88,9 @@
         "longitude": "longitude",
         "adhocFilters": [
           {
-          "subject": "org_unit_type_name",
-          "operator": "=",
-          "comparator": "Facility"
+            "subject": "org_unit_type_name",
+            "operator": "=",
+            "comparator": "Facility"
           }
         ],
         "columns": [
@@ -311,6 +311,75 @@
         ],
         "rowLimit": 10000
       }
+    },
+    "duplicateOrgUnits": {
+      "type": "table",
+      "label": "Duplicate Org Units",
+      "params": {
+        "dataSource": "orgunits",
+        "customSql": [
+          "WITH orgunits_with_normalized_name AS (",
+          "  SELECT *,",
+          "    regexp_replace(",
+          "      regexp_replace(",
+          "        regexp_replace(",
+          "          lower(trim(strip_accents(org_unit_name))),",
+          "          '[“”]', '\"'",
+          "        ),",
+          "        '[‘’]', ''''",
+          "      ),",
+          "      '\\\\s+', ' '",
+          "    ) AS org_unit_normalized_name",
+          "  FROM orgunits",
+          "  WHERE {% all_filters %} AND org_unit_validation_status <> 'REJECTED' ",
+          "),",
+          "orgunit_same_name_same_parent AS (",
+          "  SELECT org_unit_normalized_name, org_unit_parent_id, COUNT(*) AS dup_count",
+          "  FROM orgunits_with_normalized_name",
+          "  GROUP BY org_unit_normalized_name, org_unit_parent_id",
+          "  HAVING COUNT(*) > 1",
+          ")",
+          "SELECT",
+          "  d.dup_count,",
+          "  'https://iaso.bluesquare.org/dashboard/orgunits/detail/orgUnitId/' || o.org_unit_id || '/' || '|Iaso' AS org_unit_url,",
+          "  o.*",
+          "FROM orgunits_with_normalized_name o",
+          "JOIN orgunit_same_name_same_parent d",
+          "  ON o.org_unit_normalized_name = d.org_unit_normalized_name",
+          "  AND o.org_unit_parent_id = d.org_unit_parent_id",
+          "ORDER BY o.org_unit_normalized_name, o.org_unit_parent_id;"
+        ],
+        "columns": [
+          {
+            "column": "org_unit_name",
+            "label": "org_unit_name"
+          },
+          {
+            "column": "dup_count",
+            "label": "dup_count"
+          },
+          {
+            "column": "level_1_name",
+            "label": "level_1_name"
+          },
+          {
+            "column": "level_2_name",
+            "label": "level_2_name"
+          },
+          {
+            "column": "level_3_name",
+            "label": "level_3_name"
+          },
+          {
+            "column": "level_4_name",
+            "label": "level_4_name"
+          },
+          {
+            "column": "org_unit_url",
+            "label": "org_unit_url"
+          }
+        ]
+      }
     }
   },
   "layout": [
@@ -384,6 +453,11 @@
     {
       "type": "Widget",
       "widgetKey": "allOrgunitsTable",
+      "className": "col-span-3"
+    },
+    {
+      "type": "Widget",
+      "widgetKey": "duplicateOrgUnits",
       "className": "col-span-3"
     }
   ]

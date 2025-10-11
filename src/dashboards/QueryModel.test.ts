@@ -197,7 +197,7 @@ describe('QueryModel', () => {
     const queryModel = new QueryModel(mockDb, config);
     const { sql, params } = queryModel.buildSQL();
 
-    expect(sql).toBe('SELECT org_unit_level_2_name, org_unit_type_name, COUNT(org_unit_type_name) AS "COUNT(org_unit_type_name)" FROM orgunits GROUP BY org_unit_level_2_name, org_unit_type_name LIMIT 10000');
-    expect(params).toEqual([]);
-  });
-});
+        expect(sql).toBe('SELECT org_unit_level_2_name, org_unit_type_name, COUNT(org_unit_type_name) AS "COUNT(org_unit_type_name)" FROM orgunits GROUP BY org_unit_level_2_name, org_unit_type_name LIMIT 10000');
+        expect(params).toEqual([]);
+      });
+    });

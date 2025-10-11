@@ -17,6 +17,7 @@ export interface SupersetFilter {
     adhocFilters?: SupersetFilter[]
     rowLimit?: number
     columns?: { column: string; label?: string }[];
+    customSql?: string[];
   }
   
   export interface SupersetWidgetConfig {
