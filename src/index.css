@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: emerald;
+  themes: corporate;
 }
 
 .dropdown-content {

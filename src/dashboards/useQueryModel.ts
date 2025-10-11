@@ -9,6 +9,7 @@ export function useQueryModel(config: SupersetWidgetConfig, filters: SupersetFil
   const [data, setData] = useState<any[]>([]);
   const [query, setQuery] = useState<string | null>(null);
   const [params, setParams] = useState<any[] | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   const qm = useMemo(() => {
     if (!db) return null;
@@ -22,10 +23,15 @@ export function useQueryModel(config: SupersetWidgetConfig, filters: SupersetFil
     setQuery(sql);
     setParams(params);
 
-    qm.execute().then(rows => {
-      setData(rows);
-    });
+    qm.execute()
+      .then(rows => {
+        setData(rows);
+        setError(null);
+      })
+      .catch(err => {
+        setError(err);
+      });
   }, [qm, tableVersion]);
 
-  return { data, query, params };
+  return { data, query, params, error };
 }

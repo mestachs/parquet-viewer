@@ -25,9 +25,10 @@ interface WidgetDebugModalProps {
   onClose: () => void;
   query: string;
   params: any;
+  error: Error | null;
 }
 
-export function WidgetDebugModal({ isOpen, onClose, query, params }: WidgetDebugModalProps) {
+export function WidgetDebugModal({ isOpen, onClose, query, params, error }: WidgetDebugModalProps) {
   if (!isOpen) {
     return null;
   }
@@ -40,6 +41,22 @@ export function WidgetDebugModal({ isOpen, onClose, query, params }: WidgetDebug
         <div className="mt-3 text-center">
           <h3 className="text-lg leading-6 font-medium text-gray-900">Query Details</h3>
           <div className="mt-2 px-7 py-3">
+            {error && (
+              <div className="mb-4">
+                <p className="text-sm text-red-500">
+                  <strong>Error:</strong>
+                </p>
+                <pre className="bg-red-100 p-2 rounded-md text-left" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}><code>{error.message}</code></pre>
+                {error.stack && (
+                  <>
+                    <p className="text-sm text-red-500 mt-4">
+                      <strong>Stack Trace:</strong>
+                    </p>
+                    <pre className="bg-red-100 p-2 rounded-md text-left" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}><code>{error.stack}</code></pre>
+                  </>
+                )}
+              </div>
+            )}
             <p className="text-sm text-gray-500">
               <strong>Query:</strong>
             </p>

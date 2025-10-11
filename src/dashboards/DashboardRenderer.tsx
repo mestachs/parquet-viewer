@@ -5,12 +5,15 @@ import { useDuckDB } from "./DuckDBProvider";
 import { WidgetLoader } from "./WidgetLoader";
 import type { SupersetFilter } from "./supersetModel";
 
-const widgetMap: Record<string, React.LazyExoticComponent<any>> = {
+import { TabWidget } from "./TabWidget";
+
+const widgetMap: Record<string, React.LazyExoticComponent<any> | React.FC<any>> = {
   keyNumber: lazy(() => import("./KeyNumberWidget").then(module => ({ default: module.KeyNumberWidget }))),
   table: lazy(() => import("./TableWidget").then(module => ({ default: module.TableWidget }))),
   map: lazy(() => import("./MapWidget").then(module => ({ default: module.MapWidget }))),
   bar: lazy(() => import("./BarWidget").then(module => ({ default: module.BarWidget }))),
   timeseries: lazy(() => import("./TimeSeriesWidget").then(module => ({ default: module.TimeSeriesWidget }))),
+  tabs: TabWidget,
 };
 
 interface DashboardRendererProps {
@@ -18,6 +21,8 @@ interface DashboardRendererProps {
   rawFilters: Record<string, any[]>;
   supersetFilters: SupersetFilter[];
   onFilterChange: (id: string, value: any) => void;
+  onTabChange: (widgetKey: string, tabId: string) => void;
+  activeTabs: Record<string, string>;
   disableMap?: boolean;
 }
 
@@ -40,6 +45,8 @@ export const DashboardRenderer = React.memo(({
   rawFilters,
   supersetFilters,
   onFilterChange,
+  onTabChange,
+  activeTabs,
   disableMap = false,
 }: DashboardRendererProps) => {
   const handleFileRegistered = useCallback(() => {
@@ -72,6 +79,16 @@ export const DashboardRenderer = React.memo(({
       case "ConditionalWidget": {
         if (item.type === "ConditionalWidget") {
           if (item.invertCondition ? disableMap : !disableMap) return null;
+        }
+
+        if (item.widgetKey === "tabs") {
+          const TabWidgetComponent = widgetMap.tabs;
+          return <TabWidgetComponent
+            tabs={item.children}
+            renderLayoutItem={renderLayoutItem}
+            onTabChange={(tabId: string) => onTabChange(item.widgetKey, tabId)}
+            activeTab={activeTabs[item.widgetKey]}
+          />;
         }
 
         const widgetConfig = config.widgets[item.widgetKey];
@@ -107,7 +124,7 @@ export const DashboardRenderer = React.memo(({
       default:
         return null;
     }
-  }, [config, rawFilters, supersetFilters, onFilterChange, disableMap, handleFileRegistered]); // Add handleFileRegistered to dependencies
+  }, [config, rawFilters, supersetFilters, onFilterChange, onTabChange, activeTabs, disableMap, handleFileRegistered]);
 
   return (
     <div className="space-y-4 p-4">

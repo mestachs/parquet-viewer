@@ -6,18 +6,45 @@ import { useSearchParams } from "react-router-dom";
 import { ColorContext, palette } from "./ColorContext";
 import type { ColorMapping } from "./ColorContext";
 
+function findNodes(layout: any[], predicate: (node: any) => boolean): any[] {
+  const results: any[] = [];
+  function recurse(items: any[]) {
+    if (!items) return;
+    for (const item of items) {
+      if (predicate(item)) {
+        results.push(item);
+      }
+      if (item.children) {
+        recurse(item.children);
+      }
+    }
+  }
+  recurse(layout);
+  return results;
+}
+
+
 export function OrgUnitDashboard({ dashboardName }: { dashboardName: string }) {
   const { tableVersion } = useDuckDB();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [rawFilters, setRawFilters] = useState<Record<string, any[]>>(() => {
-    const filters: Record<string, any[]> = {};
-    for (const [key, value] of searchParams.entries()) {
-      filters[key] = value.split(",");
-    }
-    return filters;
-  });
   const [config, setConfig] = useState<any>(null);
   const assignedColors = useRef<ColorMapping>({});
+
+  const filterKeys = useMemo(() => config ? new Set(config.filters.map((f: any) => f.id)) : new Set(), [config]);
+
+  const [rawFilters, setRawFilters] = useState<Record<string, any[]>>(() => {
+    const initialFilters: Record<string, any[]> = {};
+    if (config) {
+      const filterKeys = new Set(config.filters.map((f: any) => f.id));
+      for (const [key, value] of searchParams.entries()) {
+        if (filterKeys.has(key)) {
+          initialFilters[key] = value.split(",");
+        }
+      }
+    }
+    return initialFilters;
+  });
+
 
   useEffect(() => {
     fetch(`./dashboards/${dashboardName}.json`)
@@ -29,14 +56,20 @@ export function OrgUnitDashboard({ dashboardName }: { dashboardName: string }) {
   }, [dashboardName]);
 
   useEffect(() => {
-    const newSearchParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(rawFilters)) {
-      if (value && value.length > 0) {
-        newSearchParams.set(key, value.join(","));
+    if (!config) return;
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      for (const key of filterKeys) {
+        const value = rawFilters[key];
+        if (value && value.length > 0) {
+          newParams.set(key, value.join(","));
+        } else {
+          newParams.delete(key);
+        }
       }
-    }
-    setSearchParams(newSearchParams);
-  }, [rawFilters, setSearchParams]);
+      return newParams;
+    });
+  }, [rawFilters, filterKeys, config, setSearchParams]);
 
   const handleFilterChange = (filterId: string, selectedOptions: any) => {
     setRawFilters((prev) => ({
@@ -44,6 +77,30 @@ export function OrgUnitDashboard({ dashboardName }: { dashboardName: string }) {
       [filterId]: selectedOptions,
     }));
   };
+
+  const handleTabChange = (widgetKey: string, tabId: string) => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set(widgetKey, tabId);
+      return newParams;
+    });
+  };
+
+  const activeTabs = useMemo(() => {
+    const tabs: Record<string, string> = {};
+    if (config) {
+      const tabContainers = findNodes(config.layout, node => node.widgetKey === 'tabs');
+      for (const container of tabContainers) {
+        const widgetKey = container.widgetKey;
+        const defaultValue = container.children?.[0]?.id;
+        if (defaultValue) {
+          tabs[widgetKey] = searchParams.get(widgetKey) || defaultValue;
+        }
+      }
+    }
+    return tabs;
+  }, [config, searchParams]);
+
 
   const supersetFilters = useMemo(() => {
     return Object.entries(rawFilters)
@@ -83,6 +140,8 @@ export function OrgUnitDashboard({ dashboardName }: { dashboardName: string }) {
           rawFilters={rawFilters}
           supersetFilters={supersetFilters}
           onFilterChange={handleFilterChange}
+          onTabChange={handleTabChange}
+          activeTabs={activeTabs}
           disableMap={true} // or false if you want the map
         />
       </div>

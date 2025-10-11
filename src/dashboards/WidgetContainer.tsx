@@ -12,11 +12,13 @@ interface WidgetContainerProps {
   query: string | null;
   params: any[] | null;
   data: any[];
+  error: Error | null;
 }
 
-export function WidgetContainer({ children, config, filters, query, params, data }: WidgetContainerProps) {
+export function WidgetContainer({ children, config, filters, query, params, data, error }: WidgetContainerProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRawDataModalOpen, setIsRawDataModalOpen] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const { db } = useDuckDb();
 
   const exportCsv = async (sql: string) => {
@@ -70,14 +72,23 @@ export function WidgetContainer({ children, config, filters, query, params, data
     <div className="relative card bg-base-100 shadow-xl p-4">
       <div className="flex justify-between items-center mb-4">
         {renderTitle()}
-        <div className="dropdown dropdown-end">
-          <label tabIndex={0} className="btn btn-ghost btn-xs">...</label>
-          <ul tabIndex={0} className="bg-beige dropdown-content menu p-2 shadow rounded-box w-52">
-            <li><a onClick={() => setIsRawDataModalOpen(true)}>View Raw Data</a></li>
-            <li><a onClick={() => setIsModalOpen(true)}>Query</a></li>
-            <li><a onClick={() => exportCsv(query || '')}>Download CSV</a></li>
-            <li><a onClick={() => downloadXlsx(query || '')}>Download XLSX</a></li>
-          </ul>
+        <div className="flex items-center">
+          {error && (
+            <div className="text-red-500 mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" onClick={() => setIsErrorModalOpen(true)}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          )}
+          <div className="dropdown dropdown-end">
+            <label tabIndex={0} className="btn btn-ghost btn-xs">...</label>
+            <ul tabIndex={0} className="bg-beige dropdown-content menu p-2 shadow rounded-box w-52">
+              <li><a onClick={() => setIsRawDataModalOpen(true)}>View Raw Data</a></li>
+              <li><a onClick={() => setIsModalOpen(true)}>Query</a></li>
+              <li><a onClick={() => exportCsv(query || '')}>Download CSV</a></li>
+              <li><a onClick={() => downloadXlsx(query || '')}>Download XLSX</a></li>
+            </ul>
+          </div>
         </div>
       </div>
       {children}
@@ -86,6 +97,14 @@ export function WidgetContainer({ children, config, filters, query, params, data
         onClose={() => setIsModalOpen(false)}
         query={query || ''}
         params={params || []}
+        error={null}
+      />
+      <WidgetDebugModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        query={query || ''}
+        params={params || []}
+        error={error}
       />
       {isRawDataModalOpen && <RawDataModal
         isOpen={isRawDataModalOpen}

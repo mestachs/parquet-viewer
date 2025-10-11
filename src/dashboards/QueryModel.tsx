@@ -158,7 +158,7 @@ export class QueryModel {
       return res.toArray();
     } catch (error) {
       console.error("Error executing query:", error);
-      return [];
+      throw error;
     } finally {
       await conn.close();
     }

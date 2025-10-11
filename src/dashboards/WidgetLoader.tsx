@@ -11,10 +11,10 @@ interface WidgetLoaderProps {
 }
 
 export function WidgetLoader({ config, filters, WidgetComponent }: WidgetLoaderProps) {
-  const { data, query, params } = useQueryModel(config, filters);
+  const { data, query, params, error } = useQueryModel(config, filters);
 
   return (
-    <WidgetContainer config={config} filters={filters} query={query} params={params} data={data}>
+    <WidgetContainer config={config} filters={filters} query={query} params={params} data={data} error={error}>
       <WidgetComponent config={config} filters={filters} data={data} />
     </WidgetContainer>
   );
