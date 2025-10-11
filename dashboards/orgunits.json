@@ -393,72 +393,92 @@
       "className": "flex flex-wrap gap-4 mb-4"
     },
     {
-      "type": "Container",
-      "className": "grid grid-cols-1 lg:grid-cols-3 gap-4",
+      "type": "Widget",
+      "widgetKey": "tabs",
       "children": [
         {
-          "type": "Container",
-          "className": "grid grid-cols-1 gap-4",
+          "type": "Tab",
+          "id": "general",
+          "label": "General",
           "children": [
             {
-              "type": "Widget",
-              "widgetKey": "totalOrgUnits",
-              "className": ""
+              "type": "Container",
+              "className": "grid grid-cols-1 lg:grid-cols-3 gap-4",
+              "children": [
+                {
+                  "type": "Container",
+                  "className": "grid grid-cols-1 gap-4",
+                  "children": [
+                    {
+                      "type": "Widget",
+                      "widgetKey": "totalOrgUnits",
+                      "className": ""
+                    },
+                    {
+                      "type": "Widget",
+                      "widgetKey": "orgUnitsWithPoints",
+                      "className": ""
+                    },
+                    {
+                      "type": "Widget",
+                      "widgetKey": "orgUnitsWithGeoJson",
+                      "className": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "Widget",
+                  "widgetKey": "orgUnitsByType",
+                  "className": "lg:col-span-1"
+                },
+                {
+                  "type": "Widget",
+                  "widgetKey": "orgunitByTypePerLevel2",
+                  "className": ""
+                }
+              ]
+            },
+            {
+              "type": "Container",
+              "className": "grid grid-cols-1 lg:grid-cols-3 gap-4",
+              "children": [
+                {
+                  "type": "Widget",
+                  "widgetKey": "orgUnitsOverTime",
+                  "className": "lg:col-span-1"
+                },
+                {
+                  "type": "ConditionalWidget",
+                  "widgetKey": "orgUnitsMap",
+                  "className": "lg:col-span-1"
+                },
+                {
+                  "type": "ConditionalWidget",
+                  "widgetKey": "orgUnitsMap2",
+                  "className": "lg:col-span-1"
+                }
+              ]
             },
             {
               "type": "Widget",
-              "widgetKey": "orgUnitsWithPoints",
-              "className": ""
-            },
-            {
-              "type": "Widget",
-              "widgetKey": "orgUnitsWithGeoJson",
-              "className": ""
+              "widgetKey": "allOrgunitsTable",
+              "className": "col-span-3"
             }
           ]
         },
         {
-          "type": "Widget",
-          "widgetKey": "orgUnitsByType",
-          "className": ""
-        },
-        {
-          "type": "Widget",
-          "widgetKey": "orgunitByTypePerLevel2",
-          "className": ""
+          "type": "Tab",          
+          "id": "quality",
+          "label": "Data Quality",
+          "children": [
+            {
+              "type": "Widget",
+              "widgetKey": "duplicateOrgUnits",
+              "className": "col-span-3"
+            }
+          ]
         }
       ]
-    },
-    {
-      "type": "Container",
-      "className": "grid grid-cols-1 lg:grid-cols-3 gap-4",
-      "children": [
-        {
-          "type": "Widget",
-          "widgetKey": "orgUnitsOverTime",
-          "className": "lg:col-span-1"
-        },
-        {
-          "type": "ConditionalWidget",
-          "widgetKey": "orgUnitsMap",
-          "className": "lg:col-span-1"
-        },
-        {
-          "type": "ConditionalWidget",
-          "widgetKey": "orgUnitsMap2",
-          "className": "lg:col-span-1"
-        }
-      ]
-    },
-    {
-      "type": "Widget",
-      "widgetKey": "allOrgunitsTable",
-      "className": "col-span-3"
-    },
-    {
-      "type": "Widget",
-      "widgetKey": "duplicateOrgUnits",
-      "className": "col-span-3"
     }
   ]
 }
