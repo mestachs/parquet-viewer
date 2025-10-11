@@ -391,7 +391,7 @@
     {
       "type": "Filters",
       "className": "flex flex-wrap gap-4 mb-4"
-    },
+    },       
     {
       "type": "Widget",
       "widgetKey": "tabs",
@@ -467,7 +467,7 @@
           ]
         },
         {
-          "type": "Tab",          
+          "type": "Tab",
           "id": "quality",
           "label": "Data Quality",
           "children": [
