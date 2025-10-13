@@ -62,9 +62,6 @@ export function WidgetContainer({ children, config, filters, query, params, data
   };
 
   const renderTitle = () => {
-    if ((config as any).type === 'keyNumber') {
-        return <div />;
-    }
     return <h2 className="font-bold text-lg">{(config as any).label}</h2>;
   }
 

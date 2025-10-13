@@ -391,7 +391,7 @@
     {
       "type": "Filters",
       "className": "flex flex-wrap gap-4 mb-4"
-    },       
+    },
     {
       "type": "Widget",
       "widgetKey": "tabs",
@@ -407,7 +407,7 @@
               "children": [
                 {
                   "type": "Container",
-                  "className": "grid grid-cols-1 gap-4",
+                  "className": "grid grid-cols-1 w-[350px]",
                   "children": [
                     {
                       "type": "Widget",
@@ -423,13 +423,18 @@
                       "type": "Widget",
                       "widgetKey": "orgUnitsWithGeoJson",
                       "className": ""
+                    },
+                    {
+                      "type": "Widget",
+                      "widgetKey": "orgUnitsByType",
+                      "className": ""
                     }
                   ]
                 },
                 {
-                  "type": "Widget",
-                  "widgetKey": "orgUnitsByType",
-                  "className": "lg:col-span-1"
+                  "type": "ConditionalWidget",
+                  "widgetKey": "orgUnitsMap",
+                  "className": "col-span-2 row-span-2"
                 },
                 {
                   "type": "Widget",
@@ -440,16 +445,11 @@
             },
             {
               "type": "Container",
-              "className": "grid grid-cols-1 lg:grid-cols-3 gap-4",
+              "className": "grid grid-cols-1 lg:grid-cols-1 gap-4",
               "children": [
                 {
                   "type": "Widget",
                   "widgetKey": "orgUnitsOverTime",
-                  "className": "lg:col-span-1"
-                },
-                {
-                  "type": "ConditionalWidget",
-                  "widgetKey": "orgUnitsMap",
                   "className": "lg:col-span-1"
                 },
                 {
