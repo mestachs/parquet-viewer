@@ -32,18 +32,20 @@ export function OrgUnitDashboard({ dashboardName }: { dashboardName: string }) {
 
   const filterKeys = useMemo(() => config ? new Set(config.filters.map((f: any) => f.id)) : new Set(), [config]);
 
-  const [rawFilters, setRawFilters] = useState<Record<string, any[]>>(() => {
+  const [rawFilters, setRawFilters] = useState<Record<string, any[]>>({});
+
+  useEffect(() => {
+    if (!config) return;
+
     const initialFilters: Record<string, any[]> = {};
-    if (config) {
-      const filterKeys = new Set(config.filters.map((f: any) => f.id));
-      for (const [key, value] of searchParams.entries()) {
-        if (filterKeys.has(key)) {
-          initialFilters[key] = value.split(",");
-        }
+    const filterKeys = new Set(config.filters.map((f: any) => f.id));
+    for (const [key, value] of searchParams.entries()) {
+      if (filterKeys.has(key)) {
+        initialFilters[key] = value.split(",");
       }
     }
-    return initialFilters;
-  });
+    setRawFilters(initialFilters);
+  }, [config, searchParams]);
 
 
   useEffect(() => {

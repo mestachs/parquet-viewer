@@ -81,7 +81,7 @@ export function FilterWidget({ config, onFilterChange, filters }) {
         multiple
         onChange={handleChange}
         value={selected}
-        className="select block w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        className="select block w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-32 overflow-y-auto"
       >
         {options.map((option) => (
           <option key={option} value={option}>

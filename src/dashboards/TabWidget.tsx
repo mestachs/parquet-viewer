@@ -6,7 +6,7 @@ export function TabWidget({ tabs, activeTab, onTabChange, renderLayoutItem }: { 
 
   return (
     <div>
-      <div role="tablist" className="tabs tabs-lift tabs-xs">
+      <div role="tablist" className="tabs  tabs-lift tabs-xl">
         {tabs.map((tab: any) => (
           <a
             key={tab.id}
@@ -17,7 +17,7 @@ export function TabWidget({ tabs, activeTab, onTabChange, renderLayoutItem }: { 
           </a>
         ))}
       </div>
-      <div className="p-4">
+      <div className="p-4 tabs-border">
         {activeTabContent && activeTabContent.map((item: any, index: number) => React.cloneElement(renderLayoutItem(item), { key: `${activeTab}-${index}` }))}
       </div>
     </div>
