@@ -380,6 +380,137 @@
           }
         ]
       }
+    },
+    "badCoordinatesOrgUnits": {
+      "type": "table",
+      "label": "Org Units coordinates not belonging to the parents",
+      "params": {
+        "dataSource": "orgunits",
+        "customSql": [        
+          "WITH child_orgunits AS (",
+          "  SELECT * ",
+          "  FROM orgunits WHERE {% all_filters %}",
+          "), ",
+          "data AS (",
+          "  SELECT * ",
+          "  FROM orgunits WHERE {% all_filters %}",
+          "), ",          
+          "joined AS ( ",
+          "  SELECT  ",
+          "    child.org_unit_id, ",
+          "    child.org_unit_name, ",
+          "    child.org_unit_parent_id, ",
+          "    child.org_unit_latitude, ",
+          "    child.org_unit_longitude, ",
+          "    child.level_1_name, ",
+          "    child.level_2_name, ",
+          "    child.level_3_name, ",
+          "    child.level_4_name, ",
+          "    parent.org_unit_id AS parent_id, ",
+          "    parent.org_unit_name AS parent_name,",
+          "    parent.org_unit_simplified_geom_geojson ",
+          "  FROM child_orgunits AS child",
+          "  JOIN data AS parent",
+          "    ON child.org_unit_parent_id = parent.org_unit_id",
+          "),",
+          "top_shapes AS ( ",
+          "  SELECT * ",
+          "  FROM data ",
+          "  WHERE org_unit_level = 3 ",
+          "    AND org_unit_simplified_geom_geojson IS NOT NULL ",
+          "), ",
+          "results AS (",
+          "SELECT ",
+          "  j.org_unit_id,",
+          "  j.org_unit_name,",
+          "  j.parent_name,",
+          "  j.org_unit_latitude,",
+          "  j.org_unit_longitude,",
+          "  j.parent_id,",
+          "  j.level_1_name, ",
+          "  j.level_2_name, ",
+          "  j.level_3_name, ",
+          "  j.level_4_name, ",
+          "  CASE ",
+          "    WHEN EXISTS ( ",
+          "      SELECT 1 ",
+          "      FROM top_shapes t",
+          "      WHERE ST_Contains(",
+          "        ST_GeomFromGeoJSON(t.org_unit_simplified_geom_geojson),",
+          "        ST_Point(j.org_unit_longitude, j.org_unit_latitude)",
+          "      )",
+          "    ) THEN TRUE",
+          "    ELSE FALSE",
+          "  END AS in_top_shape,",
+          "(",
+          "  SELECT ",
+          "    MIN(",
+          "      ST_Distance_Sphere(",
+          "        ST_Point(j.org_unit_longitude, j.org_unit_latitude),",
+          "        ST_Centroid(ST_GeomFromGeoJSON(t.org_unit_simplified_geom_geojson))",
+          "      )",
+          "    ) / 1000",
+          "  FROM top_shapes t",
+          ") AS distance_to_nearest_topshape_km ",
+          "FROM joined AS j",
+          "WHERE ",
+          "  j.org_unit_latitude IS NOT NULL",
+          "  AND j.org_unit_longitude IS NOT NULL",
+          "  AND j.org_unit_simplified_geom_geojson IS NOT NULL",
+          "  AND NOT ST_Contains(",
+          "    ST_GeomFromGeoJSON(j.org_unit_simplified_geom_geojson),",
+          "    ST_Point(j.org_unit_longitude, j.org_unit_latitude)",
+          "  )",
+          ")    ",
+          "select ",
+          "'https://iaso.bluesquare.org/dashboard/orgunits/detail//orgUnitId/'|| org_unit_id || '/tab/map' as org_unit_url,",
+          "*",
+          "from results ",
+          "where in_top_shape = false "
+        ],
+        "columns": [
+          {
+            "column": "level_2_name",
+            "label": "level_2_name"
+          },
+          {
+            "column": "level_3_name",
+            "label": "level_3_name"
+          },
+          {
+            "column": "level_4_name",
+            "label": "level_4_name"
+          },          
+          {
+            "column": "org_unit_name",
+            "label": "org_unit_name"
+          },
+          {
+            "column": "parent_name",
+            "label": "parent_name"
+          },
+          {
+            "column": "org_unit_longitude",
+            "label": "org_unit_longitude"
+          },
+          {
+            "column": "org_unit_latitude",
+            "label": "org_unit_latitude"
+          },
+          {
+            "column": "distance_to_nearest_topshape_km",
+            "label": "distance_to_nearest_topshape_km"
+          },
+          {
+            "column": "in_top_shape",
+            "label": "in_top_shape"
+          },
+          {
+            "column": "org_unit_url",
+            "label": "org_unit_url"
+          }
+        ]
+      }
     }
   },
   "layout": [
@@ -474,6 +605,11 @@
             {
               "type": "Widget",
               "widgetKey": "duplicateOrgUnits",
+              "className": "col-span-3"
+            },
+            {
+              "type": "Widget",
+              "widgetKey": "badCoordinatesOrgUnits",
               "className": "col-span-3"
             }
           ]

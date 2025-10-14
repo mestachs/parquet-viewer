@@ -139,6 +139,7 @@ export class QueryModel {
 
   async execute(): Promise<any[]> {
     const conn = await this.db.connect();
+    await conn.query("INSTALL spatial;LOAD spatial;");
     const table = this.config.params.dataSource.split("__")[0];
 
     try {
