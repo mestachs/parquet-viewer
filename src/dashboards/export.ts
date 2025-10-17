@@ -1,4 +1,3 @@
-
 import { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 
 async function exportFile(
@@ -7,12 +6,19 @@ async function exportFile(
   params: any[],
   fileName: string,
   mimeType: string,
-  query: (conn: any, sql: string, params: any[], fileName: string) => Promise<any>,
+  query: (
+    conn: any,
+    sql: string,
+    params: any[],
+    fileName: string
+  ) => Promise<any>,
   transform?: (buffer: Uint8Array) => Uint8Array
 ) {
   const conn = await db.connect();
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const fullFileName = `${fileName.split('.')[0]}-${timestamp}.${fileName.split('.')[1]}`
+  const fullFileName = `${fileName.split(".")[0]}-${timestamp}.${
+    fileName.split(".")[1]
+  }`;
 
   await query(conn, sql, params, fullFileName);
   const buffer = await db.copyFileToBuffer(fullFileName);
@@ -34,6 +40,7 @@ export async function exportCsv(db: AsyncDuckDB, sql: string, params: any[]) {
     "export.csv",
     "text/csv",
     async (conn, sql, params, fileName) => {
+      console.log(fileName);
       const stmt = await conn.prepare(
         `COPY (${sql}) TO '${fileName}' (FORMAT CSV, HEADER TRUE)`
       );
@@ -42,7 +49,11 @@ export async function exportCsv(db: AsyncDuckDB, sql: string, params: any[]) {
   );
 }
 
-export async function exportParquet(db: AsyncDuckDB, sql: string, params: any[]) {
+export async function exportParquet(
+  db: AsyncDuckDB,
+  sql: string,
+  params: any[]
+) {
   await exportFile(
     db,
     sql,
@@ -59,9 +70,53 @@ export async function exportParquet(db: AsyncDuckDB, sql: string, params: any[])
 }
 
 export async function exportXlsx(db: AsyncDuckDB, sql: string, params: any[]) {
-    await exportFile(db, sql, params, "export.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", async (conn, sql, params, fileName) => {
-        await conn.query(`INSTALL excel; LOAD excel;`);
-        const stmt = await conn.prepare(`COPY (${sql}) TO '${fileName}' (FORMAT XLSX, HEADER TRUE)`);
-        await stmt.query(...params);
-    }, (buffer) => buffer.slice(1));
+  await exportFile(
+    db,
+    sql,
+    params,
+    "export.xlsx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    async (conn, sql, params, fileName) => {
+      await conn.query(`INSTALL excel; LOAD excel;`);
+      const stmt = await conn.prepare(
+        `COPY (${sql}) TO '${fileName}' (FORMAT XLSX, HEADER TRUE)`
+      );
+      await stmt.query(...params);
+    },
+    (buffer) => buffer.slice(1)
+  );
+}
+
+export async function exportSqlite(
+  db: AsyncDuckDB,
+  sql: string,
+  params: any[]
+) {
+  await exportFile(
+    db,
+    sql,
+    params,
+    "export.sqlite",
+    "application/x-sqlite3",
+    async (conn, sql, params, fileName) => {
+      // enable SQLite extension
+      await conn.query(`INSTALL sqlite; LOAD sqlite;`);
+      const tableName = "export_data";
+
+      // First, create a table from your query if needed
+      await conn.query(`DROP TABLE IF EXISTS ${tableName};`);
+      const stmt = await conn.prepare(`CREATE TABLE ${tableName} AS ${sql}`);
+      await stmt.query(...params);
+      // Export to SQLite format
+      // DuckDB can attach and write to SQLite databases
+      const sqlExport = `
+          ATTACH '${fileName}' AS sqlite_db (TYPE SQLITE);
+          CREATE TABLE sqlite_db.${tableName} AS SELECT * FROM ${tableName};
+          DETACH sqlite_db;
+        `;
+      console.log(sqlExport);
+      await conn.query(sqlExport);
+    },
+    (buffer) => buffer.slice(1)
+  );
 }

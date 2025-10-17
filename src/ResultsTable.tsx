@@ -11,11 +11,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
 
   const tableContainerRef = useRef<HTMLDivElement>(null); // Ref for the scrollable container
 
-  if (!results || results.length === 0) {
-    return <div className="small text-gray-500 mt-4">No rows</div>;
-  }
-
-  const cols = Object.keys(results[0]);
+ 
+  const cols = Object.keys(results && results[0]|| {});
   const pageCount = Math.ceil(results.length / pageSize);
 
   // Effect to update sliderPage when page changes (e.g., via Prev/Next buttons)
@@ -90,6 +87,11 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
       </button>
     </div>
   );
+
+  if (!results || results.length === 0) {
+    return <div className="small text-gray-500 mt-4">No rows</div>;
+  }
+
 
   return (
     <div className="mt-4">
