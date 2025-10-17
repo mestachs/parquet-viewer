@@ -578,11 +578,7 @@
               "type": "Container",
               "className": "grid grid-cols-1 lg:grid-cols-1 gap-4",
               "children": [
-                {
-                  "type": "Widget",
-                  "widgetKey": "orgUnitsOverTime",
-                  "className": "lg:col-span-1"
-                },
+               
                 {
                   "type": "ConditionalWidget",
                   "widgetKey": "orgUnitsMap2",
