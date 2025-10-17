@@ -5,6 +5,7 @@ import type { SupersetWidgetConfig, SupersetFilter } from './supersetModel';
 import { useDuckDb } from 'duckdb-wasm-kit';
 import { RawDataModal } from './RawDataModal';
 import { ExportMenuItem } from './ExportMenuItem';
+import { exportCsv, exportParquet, exportXlsx } from './export';
 
 interface WidgetContainerProps {
   children: React.ReactNode;
@@ -24,89 +25,14 @@ export function WidgetContainer({ children, config, filters, query, params, data
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<Error | null>(null);
 
-
-  const exportCsv = async (sql: string) => {
+  const handleExport = async (exportFunction: (db: any, sql: string, params: any[]) => Promise<void>) => {
     if (db == undefined) {
       return;
     }
     setIsExporting(true);
     setExportError(null);
     try {
-      const conn = await db?.connect();
-      const outName = "export.csv";
-      const stmt = await conn.prepare(`COPY (${sql}) TO '${outName}' (FORMAT CSV, HEADER TRUE)`);
-      const res = await stmt.query(...params);
-
-      const buffer = await db.copyFileToBuffer(outName);
-      const blob = new Blob([buffer], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = outName;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e: any) {
-      setExportError(e);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const downloadXlsx = async (sql: string) => {
-    if (db == undefined) {
-      return;
-    }
-    setIsExporting(true);
-    setExportError(null);
-    try {
-      const conn = await db?.connect();
-      const outName = "export.xlsx";
-      await conn.query(
-        `INSTALL excel; LOAD excel;`
-      ); 
-    
-      const stmt = await conn.prepare(`COPY (${sql}) TO '${outName}' (FORMAT XLSX, HEADER TRUE)`);
-      const res = await stmt.query(...params);
-
-      const buffer = await db.copyFileToBuffer(outName);
-      const firstByte = buffer[0];
-      const correctedBuffer = buffer.slice(1);
-      const blob = new Blob([correctedBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = outName;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e: any) {
-      setExportError(e);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const exportParquet = async (sql: string) => {
-    if (db == undefined) {
-      return;
-    }
-    setIsExporting(true);
-    setExportError(null);
-    try {
-      const conn = await db?.connect();
-      const outName = "export.parquet";
-      const stmt = await conn.prepare(`COPY (${sql}) TO '${outName}' (FORMAT PARQUET)`);
-      const res = await stmt.query(...params);
-
-      const buffer = await db.copyFileToBuffer(outName);
-      const blob = new Blob([buffer], { type: "application/octet-stream" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = outName;
-      a.click();
-      URL.revokeObjectURL(url);
+      await exportFunction(db, query || '', params || []);
     } catch (e: any) {
       setExportError(e);
     } finally {
@@ -143,19 +69,19 @@ export function WidgetContainer({ children, config, filters, query, params, data
               <li><a onClick={() => setIsRawDataModalOpen(true)}>View Raw Data</a></li>
               <li><a onClick={() => setIsModalOpen(true)}>Query</a></li>
               <ExportMenuItem
-                exportHandler={() => exportCsv(query || '')}
+                exportHandler={() => handleExport(exportCsv)}
                 label="Download CSV"
                 isExporting={isExporting}
                 exportError={exportError}
               />
               <ExportMenuItem
-                exportHandler={() => downloadXlsx(query || '')}
+                exportHandler={() => handleExport(exportXlsx)}
                 label="Download XLSX"
                 isExporting={isExporting}
                 exportError={exportError}
               />
               <ExportMenuItem
-                exportHandler={() => exportParquet(query || '')}
+                exportHandler={() => handleExport(exportParquet)}
                 label="Download Parquet"
                 isExporting={isExporting}
                 exportError={exportError}

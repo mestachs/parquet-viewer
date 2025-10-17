@@ -3,6 +3,7 @@ import * as duckdb from "@duckdb/duckdb-wasm";
 import { useDuckDb } from "duckdb-wasm-kit";
 import { ResultsTable } from "./ResultsTable";
 import { useNavigate } from "react-router-dom";
+import { exportCsv, exportXlsx } from "./dashboards/export";
 
 export function ParquetViewer() {
   const { db, loading: dbLoading, error: dbError } = useDuckDb();
@@ -71,45 +72,7 @@ export function ParquetViewer() {
     [db]
   );
 
-  const exportCsv = async (sql: string) => {
-    if (db == undefined) {
-      return;
-    }
-    const conn = await db?.connect();
-    const outName = "export.csv";
-    await conn.query(`COPY (${sql}) TO '${outName}' (FORMAT CSV, HEADER TRUE)`);
-    const buffer = await db.copyFileToBuffer(outName);
-    const blob = new Blob([buffer], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = outName;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
-  const downloadXlsx = async (sql: string) => {
-    if (db == undefined) {
-      return;
-    }
-    const conn = await db?.connect();
-    const outName = "export.xlsx";
-    await conn.query(
-      `INSTALL excel; LOAD excel;COPY (${sql}) TO '${outName}' (FORMAT XLSX, HEADER TRUE)`
-    );
-    const buffer = await db.copyFileToBuffer(outName);
-    const firstByte = buffer[0];
-    const correctedBuffer = buffer.slice(1);
-    const blob = new Blob([correctedBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = outName;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files && e.target.files[0];
@@ -154,14 +117,14 @@ export function ParquetViewer() {
           Run SQL
         </button>
         <button
-          onClick={() => exportCsv(sql)}
+          onClick={() => exportCsv(db, sql)}
           disabled={!file || !db}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
         >
           CSV
         </button>
         <button
-          onClick={() => downloadXlsx(sql)}
+          onClick={() => exportXlsx(db, sql)}
           disabled={!file || !db}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
         >
