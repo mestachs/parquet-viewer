@@ -20,45 +20,64 @@ export function WidgetContainer({ children, config, filters, query, params, data
   const [isRawDataModalOpen, setIsRawDataModalOpen] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const { db } = useDuckDb();
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<Error | null>(null);
+
 
   const exportCsv = async (sql: string) => {
     if (db == undefined) {
       return;
     }
-    const conn = await db?.connect();
-    const outName = "export.csv";
-    await conn.query(`COPY (${sql}) TO '${outName}' (FORMAT CSV, HEADER TRUE)`);
-    const buffer = await db.copyFileToBuffer(outName);
-    const blob = new Blob([buffer], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = outName;
-    a.click();
-    URL.revokeObjectURL(url);
+    setIsExporting(true);
+    setExportError(null);
+    try {
+      const conn = await db?.connect();
+      const outName = "export.csv";
+      await conn.query(`COPY (${sql}) TO '${outName}' (FORMAT CSV, HEADER TRUE)`);
+      const buffer = await db.copyFileToBuffer(outName);
+      const blob = new Blob([buffer], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = outName;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setExportError(e);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const downloadXlsx = async (sql: string) => {
     if (db == undefined) {
       return;
     }
-    const conn = await db?.connect();
-    const outName = "export.xlsx";
-    await conn.query(
-      `INSTALL excel; LOAD excel;COPY (${sql}) TO '${outName}' (FORMAT XLSX, HEADER TRUE)`
-    );
-    const buffer = await db.copyFileToBuffer(outName);
-    const firstByte = buffer[0];
-    const correctedBuffer = buffer.slice(1);
-    const blob = new Blob([correctedBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = outName;
-    a.click();
-    URL.revokeObjectURL(url);
+    setIsExporting(true);
+    setExportError(null);
+    try {
+      const conn = await db?.connect();
+      const outName = "export.xlsx";
+      await conn.query(
+        `INSTALL excel; LOAD excel;COPY (${sql}) TO '${outName}' (FORMAT XLSX, HEADER TRUE)`
+      );
+      const buffer = await db.copyFileToBuffer(outName);
+      const firstByte = buffer[0];
+      const correctedBuffer = buffer.slice(1);
+      const blob = new Blob([correctedBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = outName;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setExportError(e);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const renderTitle = () => {
@@ -77,13 +96,24 @@ export function WidgetContainer({ children, config, filters, query, params, data
               </svg>
             </div>
           )}
+          {exportError && (
+            <div className="text-red-500 mr-2" title={exportError.message}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          )}
           <div className="dropdown dropdown-end">
             <label tabIndex={0} className="btn btn-ghost btn-xs">...</label>
             <ul tabIndex={0} className="bg-beige dropdown-content menu p-2 shadow rounded-box w-52">
               <li><a onClick={() => setIsRawDataModalOpen(true)}>View Raw Data</a></li>
               <li><a onClick={() => setIsModalOpen(true)}>Query</a></li>
-              <li><a onClick={() => exportCsv(query || '')}>Download CSV</a></li>
-              <li><a onClick={() => downloadXlsx(query || '')}>Download XLSX</a></li>
+              <li><a onClick={() => exportCsv(query || '')} className={isExporting ? "disabled" : ""}>
+                {isExporting ? <span className="loading loading-dots loading-xs"></span> : "Download CSV"}
+              </a></li>
+              <li><a onClick={() => downloadXlsx(query || '')} className={isExporting ? "disabled" : ""}>
+                {isExporting ? <span className="loading loading-dots loading-xs"></span> : "Download XLSX"}
+              </a></li>
             </ul>
           </div>
         </div>
