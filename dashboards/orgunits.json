@@ -386,7 +386,7 @@
       "label": "Org Units coordinates not belonging to the parents",
       "params": {
         "dataSource": "orgunits",
-        "customSql": [        
+        "customSql": [
           "WITH child_orgunits AS (",
           "  SELECT * ",
           "  FROM orgunits WHERE {% all_filters %}",
@@ -394,7 +394,7 @@
           "data AS (",
           "  SELECT * ",
           "  FROM orgunits WHERE {% all_filters %}",
-          "), ",          
+          "), ",
           "joined AS ( ",
           "  SELECT  ",
           "    child.org_unit_id, ",
@@ -480,7 +480,7 @@
           {
             "column": "level_4_name",
             "label": "level_4_name"
-          },          
+          },
           {
             "column": "org_unit_name",
             "label": "org_unit_name"
@@ -604,17 +604,38 @@
           "children": [
             {
               "type": "Widget",
-              "widgetKey": "duplicateOrgUnits",
-              "className": "col-span-3"
-            },
-            {
-              "type": "Widget",
-              "widgetKey": "badCoordinatesOrgUnits",
-              "className": "col-span-3"
-            }
+              "widgetKey": "tabs",
+              "children": [
+                {
+                  "type": "Tab",
+                  "id": "badcoords",
+                  "label": "Bad coordinates",
+                  "children": [
+                    {
+                      "type": "Widget",
+                      "widgetKey": "badCoordinatesOrgUnits",
+                      "className": "col-span-3"
+                    }
+                  ]
+                },
+                {
+                  "type": "Tab",
+                  "id": "duplicated_orgunits",
+                  "label": "Duplicate names, same parent",
+                  "children": [
+                    {
+                      "type": "Widget",
+                      "widgetKey": "duplicateOrgUnits",
+                      "className": "col-span-3"
+                    }
+                  ]
+                }                
+              ]
+            }        
           ]
         }
       ]
     }
   ]
 }
+
