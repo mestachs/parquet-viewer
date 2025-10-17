@@ -51,7 +51,7 @@ export class QueryModel {
         selectParts.push(...p.groupBy);
       }
       for (const m of p.metrics ?? []) {
-        if (typeof m === 'string') selectParts.push(m)
+        if (typeof m === 'string') selectParts.push('"'+m+'"')
         else if (m.sqlExpression && m.label)
           selectParts.push(`${m.sqlExpression} AS "${m.label}"`);
         else if (m.aggregate && typeof m.column !== 'string' && m.column?.column_name && m.label) {
@@ -63,7 +63,7 @@ export class QueryModel {
       // Raw query mode
       if (p.columns && p.columns.length > 0) {
         const cols = p.columns.map((col) => {
-          return col.label ? `${col.column} AS "${col.label}"` : col.column;
+          return col.label ? `"${col.column}" AS "${col.label}"` : `"${col.column}"`;
         });
         selectParts.push(cols.join(", "));
       } else {
