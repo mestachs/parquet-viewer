@@ -86,6 +86,7 @@ export class QueryModel {
     const dynamicFilters: SupersetFilter[] = [];
     for (const f of this.filters) {
       if (
+        f.expressionType === "Simple" &&        
         f.comparator &&
         Array.isArray(f.comparator) &&
         f.comparator.length === 0
@@ -127,6 +128,9 @@ export class QueryModel {
   private filterToSQL(
     f: SupersetFilter
   ): { sql: string; params: any[] } | null {
+    if (f.expressionType === "SQL") {
+      return { sql: f.sqlExpression, params: [] };
+    }
     if (f.operator === "IN" && Array.isArray(f.comparator)) {
       const placeholders = f.comparator.map(() => "?").join(", ");
       return { sql: `${f.subject} IN (${placeholders})`, params: f.comparator };

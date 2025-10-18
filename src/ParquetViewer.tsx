@@ -209,7 +209,6 @@ export function ParquetViewer() {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
 
                 const buffer = await db.copyFileToBuffer(fullFileName);
-                debugger;
                 // Give it a moment to flush
                 await new Promise((resolve) => setTimeout(resolve, 1000));
 

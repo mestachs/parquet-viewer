@@ -4,13 +4,15 @@ import { DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
 
 export function ParquetUploadWidget({
   defaultUrl,
+  defaultTableName,
   onFileRegistered,
 }: {
   defaultUrl?: string;
+  defaultTableName?:string;
   onFileRegistered?: () => void;
 }) {
   const { db, loading, refreshTables } = useDuckDB();
-  const [tableName, setTableName] = useState("orgunits");
+  const [tableName, setTableName] = useState(defaultTableName || "orgunits");
   const [status, setStatus] = useState("");
   const [mode, setMode] = useState("");
 

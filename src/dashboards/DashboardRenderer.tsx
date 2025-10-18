@@ -59,7 +59,7 @@ export const DashboardRenderer = React.memo(({
   const renderLayoutItem = useCallback((item: any): React.ReactNode => {
     switch (item.type) {
       case "ParquetUploadWidget":
-        return <ParquetUploadWidget key="upload" className={item.className} defaultUrl={item.defaultUrl} onFileRegistered={handleFileRegistered} />;
+        return <ParquetUploadWidget key="upload" className={item.className} defaultUrl={item.defaultUrl} defaultTableName={item.defaultTableName} onFileRegistered={handleFileRegistered} />;
 
       case "Filters":
         return (

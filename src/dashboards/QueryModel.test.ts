@@ -52,7 +52,7 @@ describe('QueryModel', () => {
     const queryModel = new QueryModel(mockDb, config);
     const { sql, params } = queryModel.buildSQL();
 
-    expect(sql).toBe('SELECT col_x AS "X Column", col_y FROM another_table LIMIT 50');
+    expect(sql).toBe('SELECT "col_x" AS "X Column", "col_y" FROM another_table LIMIT 50');
     expect(params).toEqual([]);
   });
 
@@ -76,7 +76,7 @@ describe('QueryModel', () => {
     const queryModel = new QueryModel(mockDb, config, filters);
     const { sql, params } = queryModel.buildSQL();
 
-    expect(sql).toBe('SELECT id FROM filtered_table WHERE status = ? AND category IN (?, ?)');
+    expect(sql).toBe('SELECT "id" FROM filtered_table WHERE status = ? AND category IN (?, ?)');
     expect(params).toEqual(['active', 'A', 'B']);
   });
 
@@ -141,8 +141,31 @@ describe('QueryModel', () => {
     expect(params).toEqual([]);
   });
 
-  it('should build correct SQL for BarWidget configuration', () => {
-    const config: SupersetWidgetConfig = {
+    it('should handle SupersetSQLFilter', () => {
+      const config: SupersetWidgetConfig = {
+        sliceName: 'Test SQL Filter',
+        vizType: 'table',
+        params: {
+          dataSource: 'sql_filtered_table',
+          queryMode: 'raw',
+          columns: [{ column: 'id' }],
+        },
+      };
+      const filters: SupersetFilter[] = [
+        {
+          expressionType: 'SQL',
+          sqlExpression: "name = 'John Doe'",
+        },
+      ];
+  
+      const queryModel = new QueryModel(mockDb, config, filters);
+      const { sql, params } = queryModel.buildSQL();
+  
+      expect(sql).toBe("SELECT \"id\" FROM sql_filtered_table WHERE name = 'John Doe'");
+      expect(params).toEqual([]);
+    });
+  
+        it('should build correct SQL for BarWidget configuration', () => {    const config: SupersetWidgetConfig = {
       label: "Orgunit by Type per level 2",
       vizType: "bar_chart",
       params: {
