@@ -10,6 +10,8 @@ import {
   exportXlsx,
 } from "./dashboards/export";
 
+const disableSqlite = true
+
 export function ParquetViewer() {
   const { db, loading: dbLoading, error: dbError } = useDuckDb();
   const navigate = useNavigate();
@@ -165,7 +167,7 @@ export function ParquetViewer() {
           </button>
         )}
 
-        {db && (
+        {db && !disableSqlite && (
           <button
             onClick={async () => {
               setExporting(true);
