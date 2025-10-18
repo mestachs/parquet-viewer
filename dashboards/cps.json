@@ -1,0 +1,123 @@
+{
+    "colorMapping": {
+        "org_unit_type_name": {
+            "Facility": "#badbad"
+        },
+        "cycle1_administre": {
+            "oui": "#00FF00",
+            "red": "#FF0000",
+            "Cycle manquant": "#B2BEB5"
+        },
+        "cycle2_administre": {
+            "oui": "#00FF00",
+            "red": "#FF0000",
+            "Cycle manquant": "#B2BEB5"
+        },
+        "cycle3_administre": {
+            "oui": "#00FF00",
+            "red": "#FF0000",
+            "Cycle manquant": "#B2BEB5"
+        },
+        "cycle4_administre": {
+            "oui": "#00FF00",
+            "red": "#FF0000",
+            "Cycle manquant": "#B2BEB5"
+        }
+    },
+    "filters": [
+        {
+            "id": "level_1_name",
+            "label": "Country",
+            "type": "select-multiple",
+            "source": {
+                "dataSource": "entities",
+                "column": "level_1_name"
+            }
+        },
+        {
+            "id": "level_2_name",
+            "label": "Level 2 Name",
+            "type": "select-multiple",
+            "source": {
+                "dataSource": "entities",
+                "column": "level_2_name"
+            },
+            "dependsOn": "level_1_name"
+        },
+        {
+            "id": "level_3_name",
+            "label": "Level 3 Name",
+            "type": "select-multiple",
+            "source": {
+                "dataSource": "entities",
+                "column": "level_3_name"
+            },
+            "dependsOn": "level_2_name"
+        }
+    ],
+    "widgets": {
+        "childrenMap": {
+            "type": "map",
+            "label": "Children - Cycle 3",
+            "params": {
+                "dataSource": "entities",
+                "queryMode": "raw",
+                "latitude": "latitude",
+                "longitude": "longitude",
+                "dimension": "cycle3_administre",
+                "columns": [
+                    {
+                        "column": "cycle3_administre",
+                        "label": "cycle3_administre"
+                    },
+                    {
+                        "column": "enregistrement_Longitude",
+                        "label": "longitude"
+                    },
+                    {
+                        "column": "enregistrement_Latitude",
+                        "label": "latitude"
+                    },
+                    {
+                        "column": "org_unit_name",
+                        "label": "org_unit_name"
+                    },
+                    {
+                        "column": "level_1_name",
+                        "label": "Pays"
+                    },
+                    {
+                        "column": "level_2_name",
+                        "label": "Région"
+                    },
+                    {
+                        "column": "level_3_name",
+                        "label": "District"
+                    }
+                ],
+                "adhocFilters": [
+                    {
+                        "expressionType": "SQL",
+                        "sqlExpression":  "NULLIF(\"entities\".\"enregistrement_Longitude\", '')::DOUBLE PRECISION BETWEEN -8.6 AND -2.5\r\nAND NULLIF(\"entities\".\"enregistrement_Latitude\", '')::DOUBLE PRECISION BETWEEN 4.3 AND 10.0"
+                    }
+                ]
+            }
+        }
+    },
+    "layout": [
+        {
+            "type": "ParquetUploadWidget",
+            "className": "mb-4",
+            "defaultTableName": "entities"
+        },
+        {
+            "type": "Filters",
+            "className": "flex flex-wrap gap-4 mb-4"
+        },
+        {
+            "type": "ConditionalWidget",
+            "widgetKey": "childrenMap",
+            "className": "h-[500px]"
+        }
+    ]
+}
