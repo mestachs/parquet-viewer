@@ -172,7 +172,7 @@
         {
             "type": "ParquetUploadWidget",
             "className": "mb-4",
-            "defaultTableName": "entities"
+            "defaultTableName": "entities"          
         },
         {
             "type": "Filters",
