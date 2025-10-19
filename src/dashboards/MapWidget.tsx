@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -42,7 +42,12 @@ function fromHex(hex) {
 }
 
 function createTooltip(map: any) {
-  const tooltip = L.tooltip({ direction: 'top', offset: [0, -8], permanent: false, sticky: true });
+  const tooltip = L.tooltip({
+    direction: "top",
+    offset: [0, -8],
+    permanent: false,
+    sticky: true,
+  });
   // do not add to map yet; we add/remove dynamically
   return tooltip;
 }
@@ -56,7 +61,7 @@ function hideTooltip(map, tooltip) {
 }
 
 const labelFor = (pt) => {
-  return "Point <pre>"+JSON.stringify(pt, undefined, 4)+"</pre>"
+  return "Point <pre>" + JSON.stringify(pt, undefined, 4) + "</pre>";
 };
 
 const GlifyLayer: React.FC<MapWidgetProps> = ({ config, data, filters }) => {
@@ -64,6 +69,8 @@ const GlifyLayer: React.FC<MapWidgetProps> = ({ config, data, filters }) => {
   const glifyLayerRef = useRef<any>(null);
   const tooltip = createTooltip(map);
   const colorContext = useColor();
+
+  const [currentGlifyPoints, setCurrentGlifyPoints] = useState()
 
   useEffect(() => {
     console.log("GlifyLayer useEffect triggered, data changed:", data.length);
@@ -83,37 +90,50 @@ const GlifyLayer: React.FC<MapWidgetProps> = ({ config, data, filters }) => {
       .map((d) => ({
         latitude: parseFloat(d[latitudeColumn]),
         longitude: parseFloat(d[longitudeColumn]),
-        color: colorContext?.getColor(config.params?.dimension, d[config.params?.dimension]) || "#000000",
-        data: d
+        color:
+          colorContext?.getColor(
+            config.params?.dimension,
+            d[config.params?.dimension]
+          ) || "#000000",
+        data: d,
       }))
       .filter((p) => !isNaN(p.latitude) && !isNaN(p.longitude));
 
     if (points.length === 0) {
       return;
     }
-    
-    glifyLayerRef.current = L.glify
-      .points({
-        map: map,
-        data: points.map((p) => [p.latitude, p.longitude]), // Transform to [lng, lat]
-        color: (index: number, coordinates: number[]) => {         
-          return fromHex(points[index].color)
-        },
-        sensitivityHover: 200, // increase hover tolerance
-        hover: (e, index) => {
-          // e is an object with lat/lng in many builds; fallback to map mouse event
-          const latlng = (e && e.lat && e.lng) ? [e.lat, e.lng] : map.mouseEventToLatLng(e.originalEvent || e);
-          const point = points.find(p => p.latitude == index[0] && p.longitude == index[1])
-          const html = labelFor ? labelFor(point) : `#${index}`;
-          showTooltip(map, tooltip, latlng, html);
-        },
-        hoverOff: () => {
-          hideTooltip(map, tooltip);
-        },        
-        size: 5,
-        opacity: 1,
-      })
-      .addTo(map);
+
+    const glifyPoints = L.glify.points({
+      map: map,
+      data: points.map((p) => [p.latitude, p.longitude]), // Transform to [lng, lat]
+      color: (index: number, coordinates: number[]) => {
+        return fromHex(points[index].color);
+      },
+      sensitivityHover: 200, // increase hover tolerance
+      hover: (e, index) => {
+        // e is an object with lat/lng in many builds; fallback to map mouse event
+        const latlng =
+          e && e.lat && e.lng
+            ? [e.lat, e.lng]
+            : map.mouseEventToLatLng(e.originalEvent || e);
+        const point = points.find(
+          (p) => p.latitude == index[0] && p.longitude == index[1]
+        );
+        const html = labelFor ? labelFor(point) : `#${index}`;
+        showTooltip(map, tooltip, latlng, html);
+      },
+      hoverOff: () => {
+        hideTooltip(map, tooltip);
+      },
+      size: 5,
+      opacity: 1,
+    });
+
+    glifyLayerRef.current = glifyPoints.addTo(map);
+    if (currentGlifyPoints) {
+      currentGlifyPoints.remove()
+    }
+    setCurrentGlifyPoints(glifyPoints)
 
     // Optional: Fit map to points
     if (points.length > 0) {
