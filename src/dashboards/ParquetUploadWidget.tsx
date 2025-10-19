@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDuckDB } from "./DuckDBProvider";
 import { DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
+import { useSearchParams } from "react-router-dom";
 
 export function ParquetUploadWidget({
   defaultUrl,
@@ -15,22 +16,27 @@ export function ParquetUploadWidget({
   const [tableName, setTableName] = useState(defaultTableName || "orgunits");
   const [status, setStatus] = useState("");
   const [mode, setMode] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = Object.fromEntries(searchParams.entries())
+  const dataUrl = defaultTableName ? query[defaultTableName] || defaultUrl : defaultUrl
 
   useEffect(() => {
     if (loading) {
       setStatus("Initiliazing duckdb");
+    }else {
+      setStatus("Duckdb initialized");
     }
   }, [loading]);
   useEffect(() => {
-    if (defaultUrl && db) {
+    if (dataUrl && db) {
       const loadDefaultFile = async () => {
         setStatus("Loading default file...");
         try {
-          const response = await fetch(defaultUrl);
+          const response = await fetch(dataUrl);
           const blob = await response.blob();
           const file = new File(
             [blob],
-            defaultUrl.split("/").pop() || "default.parquet"
+            dataUrl.split("/").pop() || "default.parquet"
           );
 
           await db.registerFileHandle(
