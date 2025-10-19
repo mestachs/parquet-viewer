@@ -98,9 +98,73 @@
                 "adhocFilters": [
                     {
                         "expressionType": "SQL",
-                        "sqlExpression":  "NULLIF(\"entities\".\"enregistrement_Longitude\", '')::DOUBLE PRECISION BETWEEN -8.6 AND -2.5\r\nAND NULLIF(\"entities\".\"enregistrement_Latitude\", '')::DOUBLE PRECISION BETWEEN 4.3 AND 10.0"
+                        "sqlExpression": "NULLIF(\"entities\".\"enregistrement_Longitude\", '')::DOUBLE PRECISION BETWEEN -8.6 AND -2.5\r\nAND NULLIF(\"entities\".\"enregistrement_Latitude\", '')::DOUBLE PRECISION BETWEEN 5.5 AND 10.0",
+                        "comment": "hide all point outside the bounding box of the campaign"
                     }
                 ]
+            }
+        },
+        "totalChildrenEnrolled": {
+            "type": "keyNumber",
+            "label": "Total children Enrolled",
+            "params": {
+                "dataSource": "entities",
+                "queryMode": "aggregate",
+                "metrics": [
+                    {
+                        "label": "total_children",
+                        "sqlExpression": "COUNT(*)"
+                    }
+                ],
+                "adhocFilters": [
+                    {
+                        "expressionType": "SQL",
+                        "sqlExpression": "\"enregistrement_Date de création\" < '2025-07-21'"
+                    }
+                ],
+                "rowLimit": 1
+            }
+        },
+        "totalChildrenTreated": {
+            "type": "keyNumber",
+            "label": "Total children treated",
+            "params": {
+                "dataSource": "entities",
+                "queryMode": "aggregate",
+                "metrics": [
+                    {
+                        "label": "total_orgunits",
+                        "sqlExpression": "COUNT(cycle1_administre)"
+                    }
+                ],
+                "adhocFilters": [
+                    {
+                        "expressionType": "SQL",
+                        "sqlExpression": "\"enregistrement_Date de création\" < '2025-07-21' AND cycle1_administre IN ('oui')"
+                    }
+                ],
+                "rowLimit": 1
+            }
+        },
+        "totalChildrenEnrolledButNotTreated": {
+            "type": "keyNumber",
+            "label": "Total children treated",
+            "params": {
+                "dataSource": "entities",
+                "queryMode": "aggregate",
+                "metrics": [
+                    {
+                        "label": "total_orgunits",
+                        "sqlExpression": "COUNT(cycle1_administre)"
+                    }
+                ],
+                "adhocFilters": [
+                    {
+                        "expressionType": "SQL",
+                        "sqlExpression": "\"enregistrement_Date de création\" < '2025-07-21' AND cycle1_administre IN ('non')"
+                    }
+                ],
+                "rowLimit": 1
             }
         }
     },
@@ -113,6 +177,25 @@
         {
             "type": "Filters",
             "className": "flex flex-wrap gap-4 mb-4"
+        },   
+        {
+            "type": "Container",
+            "className": "grid grid-cols-3 lg:grid-cols-3 gap-4",
+            "children": [
+                            
+                {
+                    "type": "ConditionalWidget",
+                    "widgetKey": "totalChildrenEnrolled"
+                },
+                {
+                    "type": "ConditionalWidget",
+                    "widgetKey": "totalChildrenTreated"
+                },
+                {
+                    "type": "ConditionalWidget",
+                    "widgetKey": "totalChildrenEnrolledButNotTreated"
+                }
+            ]
         },
         {
             "type": "ConditionalWidget",
