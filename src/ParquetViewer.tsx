@@ -32,9 +32,11 @@ export function ParquetViewer() {
           const conn = await db.connect();
           await conn.query("INSTALL spatial;");
           await conn.query("LOAD spatial;");
+          setStatus("Installing extensions... spatial");
           await conn.query("INSTALL excel;");
           await conn.query("LOAD excel;");
-          setStatus("Extensions installed.");
+          setStatus("Installing extensions... excel");
+          setStatus("Extensions spatial and excel installed.");
         } catch (err: any) {
           setStatus("Error installing extensions: " + err.message);
         }
@@ -48,9 +50,20 @@ export function ParquetViewer() {
   const [lastSql, setLastSql] = useState("");
 
   const [results, setResults] = useState<any[]>([]);
-  const [files, setFiles] = useState<File[]>([]);
+  const [dbFiles, setDbFiles] = useState<duckdb.WebFile[]>([]);
 
   const [exporting, setExporting] = useState(false);
+
+  const refreshFiles = useCallback(async () => {
+    if (!db) return;
+    const files = await db.globFiles("*");
+    debugger;
+    setDbFiles(files);
+  }, [db]);
+
+  useEffect(() => {
+    refreshFiles();
+  }, [refreshFiles]);
 
   const registerFiles = async (files: File[]) => {
     if (!db) return;
@@ -61,6 +74,7 @@ export function ParquetViewer() {
       await db.registerFileBuffer(file.name, u8);
       setStatus(`Registered as ${file.name}`);
     }
+    await refreshFiles();
   };
 
   const runSQL = useCallback(
@@ -97,15 +111,18 @@ export function ParquetViewer() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
     if (selectedFiles.length > 0) {
-      setFiles(selectedFiles);
       registerFiles(selectedFiles);
-      const firstFile = selectedFiles[0];
-      if (firstFile.name.endsWith(".parquet")) {
-        setSql(`SELECT * FROM read_parquet('${firstFile.name}')`);
-      } else if (firstFile.name.endsWith(".csv")) {
-        setSql(`SELECT * FROM read_csv_auto('${firstFile.name}')`);
-      } else if (firstFile.name.endsWith(".xlsx")) {
-        setSql(`SELECT * FROM read_xlsx('${firstFile.name}')`);
+
+      const statements = [];
+      for (let file of selectedFiles) {
+        if (file.name.endsWith(".parquet")) {
+          statements.push(`SELECT * FROM read_parquet('${file.name}')`);
+        } else if (file.name.endsWith(".csv")) {
+          statements.push(`SELECT * FROM read_csv_auto('${file.name}')`);
+        } else if (file.name.endsWith(".xlsx")) {
+          statements.push(`SELECT * FROM read_xlsx('${file.name}')`);
+        }
+        setSql(statements.join(";\n"));
       }
     }
   };
@@ -131,12 +148,22 @@ export function ParquetViewer() {
       {dbError?.message}
 
       <label className="block text-sm font-medium mb-2 mt-4 mr-4">SQL:</label>
-      <textarea
-        value={sql}
-        onChange={(e) => setSql(e.target.value)}
-        className="textarea w-1/2 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm mr-4"
-        rows={5}
-      />
+      <div className="flex w-full">
+        <textarea
+          value={sql}
+          onChange={(e) => setSql(e.target.value)}
+          className="textarea w-1/2 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm mr-4"
+          rows={5}
+        />
+        <div className="w-1/2 border rounded-md p-2">
+          <h3 className="text-sm font-medium">Available files:</h3>
+          <ul>
+            {dbFiles.map((file) => (
+              <li key={file.fileName}>{file.fileName}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
       <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
         <button
           onClick={() => runSQL(sql)}
@@ -155,7 +182,7 @@ export function ParquetViewer() {
                 setExporting(false);
               }
             }}
-            disabled={files.length === 0 || !db || exporting}
+            disabled={dbFiles.length === 0 || !db || exporting}
             className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
             CSV
@@ -171,7 +198,7 @@ export function ParquetViewer() {
                 setExporting(false);
               }
             }}
-            disabled={files.length === 0 || !db || exporting}
+            disabled={dbFiles.length === 0 || !db || exporting}
             className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
             Excel
@@ -187,7 +214,7 @@ export function ParquetViewer() {
                 setExporting(false);
               }
             }}
-            disabled={files.length === 0 || !db || exporting}
+            disabled={dbFiles.length === 0 || !db || exporting}
             className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
             Parquet
@@ -255,7 +282,7 @@ export function ParquetViewer() {
                 setExporting(false);
               }
             }}
-            disabled={files.length === 0 || !db || exporting}
+            disabled={dbFiles.length === 0 || !db || exporting}
             className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
             SQLite
