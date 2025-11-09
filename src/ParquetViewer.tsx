@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import { useDuckDb } from "duckdb-wasm-kit";
 import { ResultsTable } from "./ResultsTable";
@@ -15,6 +15,7 @@ const disableSqlite = true;
 export function ParquetViewer() {
   const { db, loading: dbLoading, error: dbError } = useDuckDb();
   const navigate = useNavigate();
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -132,7 +133,7 @@ export function ParquetViewer() {
       <div className="controls flex items-center gap-2 mt-4">
         <h1 className="text-2xl font-bold">Parquet viewer powered by DuckDB</h1>
         <div className="small text-gray-500">
-          Works fully in-browser (no server). You can select several times.
+          Works fully in-browser (no server). You can select several files (parquet, xlsx, csv).
         </div>
         <div className="controls flex items-center gap-2 mt-4">
           <input
@@ -150,6 +151,7 @@ export function ParquetViewer() {
       <label className="block text-sm font-medium mb-2 mt-4 mr-4">SQL:</label>
       <div className="flex w-full">
         <textarea
+          ref={textAreaRef}
           value={sql}
           onChange={(e) => setSql(e.target.value)}
           className="textarea w-1/2 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm mr-4"
@@ -166,7 +168,20 @@ export function ParquetViewer() {
       </div>
       <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
         <button
-          onClick={() => runSQL(sql)}
+          onClick={() => {
+            const textarea = textAreaRef.current;
+            if (textarea) {
+              const { selectionStart, selectionEnd } = textarea;
+              const selectedSql = sql.substring(selectionStart, selectionEnd);
+              if (selectedSql) {
+                runSQL(selectedSql);
+              } else {
+                runSQL(sql);
+              }
+            } else {
+              runSQL(sql);
+            }
+          }}
           disabled={!db}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
         >
