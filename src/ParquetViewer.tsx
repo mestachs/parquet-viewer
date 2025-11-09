@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import { useDuckDb } from "duckdb-wasm-kit";
 import { ResultsTable } from "./ResultsTable";
@@ -10,7 +10,7 @@ import {
   exportXlsx,
 } from "./dashboards/export";
 
-const disableSqlite = true
+const disableSqlite = true;
 
 export function ParquetViewer() {
   const { db, loading: dbLoading, error: dbError } = useDuckDb();
@@ -24,25 +24,43 @@ export function ParquetViewer() {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    if (db) {
+      const installExtensions = async () => {
+        setStatus("Installing extensions...");
+        try {
+          const conn = await db.connect();
+          await conn.query("INSTALL spatial;");
+          await conn.query("LOAD spatial;");
+          await conn.query("INSTALL excel;");
+          await conn.query("LOAD excel;");
+          setStatus("Extensions installed.");
+        } catch (err: any) {
+          setStatus("Error installing extensions: " + err.message);
+        }
+      };
+      installExtensions();
+    }
+  }, [db]);
+
   const [status, setStatus] = useState("Loading duckdb-wasm...");
-  const [sql, setSql] = useState(
-    "SELECT * FROM read_parquet('uploaded.parquet')"
-  );
+  const [sql, setSql] = useState("");
   const [lastSql, setLastSql] = useState("");
 
   const [results, setResults] = useState<any[]>([]);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
 
   const [exporting, setExporting] = useState(false);
 
-  const registerFile = async (file: File) => {
+  const registerFiles = async (files: File[]) => {
     if (!db) return;
-    setStatus(`Registering ${file.name}...`);
-    const buf = await file.arrayBuffer();
-    const u8 = new Uint8Array(buf);
-    const name = "uploaded.parquet";
-    await db.registerFileBuffer(name, u8);
-    setStatus(`Registered as ${name}`);
+    for (const file of files) {
+      setStatus(`Registering ${file.name}...`);
+      const buf = await file.arrayBuffer();
+      const u8 = new Uint8Array(buf);
+      await db.registerFileBuffer(file.name, u8);
+      setStatus(`Registered as ${file.name}`);
+    }
   };
 
   const runSQL = useCallback(
@@ -77,10 +95,18 @@ export function ParquetViewer() {
   );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files && e.target.files[0];
-    if (f) {
-      setFile(f);
-      registerFile(f);
+    const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
+    if (selectedFiles.length > 0) {
+      setFiles(selectedFiles);
+      registerFiles(selectedFiles);
+      const firstFile = selectedFiles[0];
+      if (firstFile.name.endsWith(".parquet")) {
+        setSql(`SELECT * FROM read_parquet('${firstFile.name}')`);
+      } else if (firstFile.name.endsWith(".csv")) {
+        setSql(`SELECT * FROM read_csv_auto('${firstFile.name}')`);
+      } else if (firstFile.name.endsWith(".xlsx")) {
+        setSql(`SELECT * FROM read_xlsx('${firstFile.name}')`);
+      }
     }
   };
 
@@ -89,13 +115,14 @@ export function ParquetViewer() {
       <div className="controls flex items-center gap-2 mt-4">
         <h1 className="text-2xl font-bold">Parquet viewer powered by DuckDB</h1>
         <div className="small text-gray-500">
-          Works fully in-browser (no server).
+          Works fully in-browser (no server). You can select several times.
         </div>
         <div className="controls flex items-center gap-2 mt-4">
           <input
             id="parquet"
             type="file"
-            accept=".parquet"
+            accept=".parquet,.csv,.xlsx"
+            multiple
             onChange={handleFileChange}
             className="file-input"
           />
@@ -113,7 +140,7 @@ export function ParquetViewer() {
       <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
         <button
           onClick={() => runSQL(sql)}
-          disabled={!file || !db}
+          disabled={!db}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
         >
           Run SQL
@@ -128,7 +155,7 @@ export function ParquetViewer() {
                 setExporting(false);
               }
             }}
-            disabled={!file || !db || exporting}
+            disabled={files.length === 0 || !db || exporting}
             className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
             CSV
@@ -144,7 +171,7 @@ export function ParquetViewer() {
                 setExporting(false);
               }
             }}
-            disabled={!file || !db || exporting}
+            disabled={files.length === 0 || !db || exporting}
             className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
             Excel
@@ -160,7 +187,7 @@ export function ParquetViewer() {
                 setExporting(false);
               }
             }}
-            disabled={!file || !db || exporting}
+            disabled={files.length === 0 || !db || exporting}
             className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
             Parquet
@@ -180,17 +207,17 @@ export function ParquetViewer() {
                 /*const fullFileName = `${filename.split(".")[0]}-${timestamp}.${
                   filename.split(".")[1]
                 }`;*/
-                const fullFileName = filename
+                const fullFileName = filename;
                 const conn = await db.connect();
 
-                console.log("duckdb version",await db.getVersion())
+                console.log("duckdb version", await db.getVersion());
                 try {
                   await db.dropFile(fullFileName);
                 } catch (_) {}
-                
+
                 // Register an empty file buffer
                 // await db.registerFileBuffer(fullFileName, new Uint8Array());
-            
+
                 // Execute statements separately
                 await conn.query(
                   `ATTACH '${fullFileName}' AS sqlite_db (TYPE SQLITE);`
@@ -199,7 +226,9 @@ export function ParquetViewer() {
                 await conn.query(
                   `CREATE TABLE sqlite_db.${tableName} AS ${sql};`
                 );
-                const check = await conn.query(`SELECT COUNT(*) AS cnt FROM sqlite_db.${tableName};`);
+                const check = await conn.query(
+                  `SELECT COUNT(*) AS cnt FROM sqlite_db.${tableName};`
+                );
                 console.log("Row count:", check.get(0).cnt);
                 await db.flushFiles();
                 await conn.query(`DETACH sqlite_db;`);
@@ -226,7 +255,7 @@ export function ParquetViewer() {
                 setExporting(false);
               }
             }}
-            disabled={!file || !db || exporting}
+            disabled={files.length === 0 || !db || exporting}
             className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
             SQLite
